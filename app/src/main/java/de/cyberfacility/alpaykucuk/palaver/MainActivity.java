@@ -31,7 +31,8 @@ public class MainActivity extends AppCompatActivity {
             this.startActivity(myIntent);
         }
         else {
-
+            Intent myIntent = new Intent(MainActivity.this, LoginActivity.class);
+            this.startActivity(myIntent);
         }
     }
 

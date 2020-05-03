@@ -89,7 +89,7 @@ public void internet() {
         conn = (HttpURLConnection) url.openConnection();
         conn.setDoOutput(true);
         OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-        wr.write(data);
+//        wr.write(data);
         wr.flush();
         is = conn.getInputStream();
         wr.close();

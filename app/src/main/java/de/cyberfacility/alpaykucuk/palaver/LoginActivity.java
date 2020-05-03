@@ -2,11 +2,13 @@ package de.cyberfacility.alpaykucuk.palaver;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -66,8 +68,8 @@ public class LoginActivity extends AppCompatActivity {
 
     public void login() {
 
-
-        getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
+        InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
+        imm.hideSoftInputFromWindow(login_password.getWindowToken(), 0);
 
         progressBar.setVisibility(View.VISIBLE);
         if (login_username.getText().toString().equals("") || login_password.getText().toString().equals("")) {

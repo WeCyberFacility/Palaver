@@ -8,6 +8,8 @@ public class Nutzer {
     private String nutzername;
     private String passwort;
 
+    private String pictureurl;
+
 
     public Nutzer(String nutzername, String passwort) {
         this.nutzername = nutzername;
@@ -30,6 +32,13 @@ public class Nutzer {
         this.passwort = passwort;
     }
 
+    public String getPictureurl() {
+        return pictureurl;
+    }
+
+    public void setPictureurl(String pictureurl) {
+        this.pictureurl = pictureurl;
+    }
 
     //API Abfragen:
 

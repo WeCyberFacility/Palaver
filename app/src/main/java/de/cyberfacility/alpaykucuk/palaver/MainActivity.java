@@ -29,10 +29,12 @@ public class MainActivity extends AppCompatActivity {
         {
             Intent myIntent = new Intent(MainActivity.this, splashActivity.class);
             this.startActivity(myIntent);
+            finish();
         }
         else {
             Intent myIntent = new Intent(MainActivity.this, LoginActivity.class);
             this.startActivity(myIntent);
+            finish();
         }
     }
 

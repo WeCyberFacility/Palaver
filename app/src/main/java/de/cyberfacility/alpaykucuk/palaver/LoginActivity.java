@@ -3,23 +3,19 @@ package de.cyberfacility.alpaykucuk.palaver;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
-import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import java.io.InputStream;
-import java.io.OutputStreamWriter;
-import java.io.UnsupportedEncodingException;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.net.URLEncoder;
-import java.util.HashMap;
-import java.util.Map;
+import com.github.ybq.android.spinkit.sprite.Sprite;
+import com.github.ybq.android.spinkit.style.FoldingCube;
+
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -30,6 +26,9 @@ public class LoginActivity extends AppCompatActivity {
     EditText login_password;
     ImageView loginbtn;
     TextView registrierenbtn;
+    ProgressBar progressBar;
+
+    JSONObject response;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,9 +40,10 @@ public class LoginActivity extends AppCompatActivity {
         loginbtn = findViewById(R.id.loginbtn);
         registrierenbtn =findViewById(R.id.registrierenbtn);
 
-
-        login_username.setText("Alpay");
-
+        progressBar = (ProgressBar)findViewById(R.id.loadingspinner);
+        Sprite foldingCube = new FoldingCube();
+        progressBar.setIndeterminateDrawable(foldingCube);
+        progressBar.setVisibility(View.INVISIBLE);
 
         loginbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -58,59 +58,84 @@ public class LoginActivity extends AppCompatActivity {
                 startActivity(myIntent);
             }
         });
-internet();
+
+
     }
-
-    private String getPostDataString(HashMap<String, String> params) throws UnsupportedEncodingException {
-        StringBuilder result = new StringBuilder();
-        boolean first = true;
-        for(Map.Entry<String, String> entry : params.entrySet()){
-            if (first)
-                first = false;
-            else
-                result.append("&");
-
-            result.append(URLEncoder.encode(entry.getKey(), "UTF-8"));
-            result.append("=");
-            result.append(URLEncoder.encode(entry.getValue(), "UTF-8"));
-        }
-
-        return result.toString();
-    }
-
-public void internet() {
-    InputStream is = null;
-    HashMap <String, String> data = new HashMap<>();
-    data.put("Username", "Alpay");
-    data.put("Password", "1234");
-    HttpURLConnection conn = null;
-    try {
-        URL url = new URL("http://palaver.se.paluno.uni-due.de/api/user/register");
-        conn = (HttpURLConnection) url.openConnection();
-        conn.setDoOutput(true);
-        OutputStreamWriter wr = new OutputStreamWriter(conn.getOutputStream());
-//        wr.write(data);
-        wr.flush();
-        is = conn.getInputStream();
-        wr.close();
-    } catch (Exception e) {
-        e.printStackTrace();
-    } finally {
-        conn.disconnect();
-    }
-
-}
 
 
 
     public void login() {
 
+
+        progressBar.setVisibility(View.VISIBLE);
         if (login_username.getText().toString().equals("") || login_password.getText().toString().equals("")) {
             new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
                     .setTitleText("Oops...")
                     .setContentText("Bitte fülle alle Felder aus!")
                     .show();
+            progressBar.setVisibility(View.INVISIBLE);
+        } else {
+
+            final Nutzer nutzer = new Nutzer(login_username.getText().toString().trim(), login_password.getText().toString().trim());
+            Thread thread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try  {
+                        response = APIRequestHandler.checkNutzernameUndPasswordFureLogin(nutzer.getNutzername(), nutzer.getPasswort());
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            thread.start();
+
+
+            final Handler handler = new Handler();
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    while (response == null) {}
+
+                    String responseString = null;
+                    try {
+                        responseString = response.get("Info").toString().trim();
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                    checkResponseFromLogin(responseString);
+
+                    progressBar.setVisibility(View.INVISIBLE);
+                }
+            }, 2000);
+
         }
 
+    }
+
+    public void checkResponseFromLogin(String response) {
+
+        switch (response) {
+            case "Benutzer erfolgreich validiert":
+                //TODO: Zum Hauptmenü wechseln
+                break;
+                default:
+                    FehlerAnzeigen(response);
+                    login_username.setText("");
+                    login_password.setText("");
+                    break;
+        }
+
+
+    }
+
+
+    public void FehlerAnzeigen(String message) {
+        new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
+                .setTitleText("Oops...")
+                .setContentText(message)
+                .show();
     }
 }

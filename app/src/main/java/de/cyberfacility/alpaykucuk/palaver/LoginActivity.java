@@ -62,6 +62,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
 
+
     }
 
 
@@ -123,7 +124,9 @@ public class LoginActivity extends AppCompatActivity {
 
         switch (response) {
             case "Benutzer erfolgreich validiert":
-                //TODO: Zum Hauptmenü wechseln
+                MainScreenActivity.currentNutzer = new Nutzer(login_username.getText().toString(), login_password.getText().toString());
+                Intent myIntent = new Intent(LoginActivity.this, MainScreenActivity.class);
+                startActivity(myIntent);
                 break;
                 default:
                     FehlerAnzeigen(response);

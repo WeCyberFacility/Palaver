@@ -5,10 +5,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.github.ybq.android.spinkit.sprite.Sprite;
@@ -31,7 +33,7 @@ public class MainScreenActivity extends AppCompatActivity {
     static Nutzer currentNutzer;
     ProgressBar progressBar;
     JSONObject response;
-
+    ImageView settingbtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,7 +63,14 @@ public class MainScreenActivity extends AppCompatActivity {
 
         thread.start();
         */
-
+     settingbtn = findViewById(R.id.settingsbtn);
+     settingbtn.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View view) {
+             Intent myIntent = new Intent(MainScreenActivity.this, activity_pw_aendern.class);
+             startActivity(myIntent);
+         }
+     });
     }
 
 

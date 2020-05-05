@@ -5,10 +5,12 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 
 import com.github.ybq.android.spinkit.sprite.Sprite;
@@ -31,12 +33,16 @@ public class MainScreenActivity extends AppCompatActivity {
     static Nutzer currentNutzer;
     ProgressBar progressBar;
     JSONObject response;
+    ImageView addcontactbtn;
+    ImageView settingsbtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
+        addcontactbtn = findViewById(R.id.addcontactbtn);
+        settingsbtn = findViewById(R.id.settingsbtn);
         nutzer_rv = findViewById(R.id.chatsrv);
         progressBar = (ProgressBar)findViewById(R.id.loadingspinnermain);
         Sprite foldingCube = new FoldingCube();
@@ -46,27 +52,28 @@ public class MainScreenActivity extends AppCompatActivity {
         nutzer_rv.setLayoutManager(new LinearLayoutManager(this));
         KontaktListeLaden();
 
-        /*Thread thread = new Thread(new Runnable() {
 
+        addcontactbtn.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void run() {
-                try  {
-                    currentNutzer.NutzerAlsFreundHinzuzfuegen("metin");
+            public void onClick(View view) {
+                Intent myIntent = new Intent(MainScreenActivity.this, KontaktAddenActivity.class);
+                startActivity(myIntent);
 
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
             }
         });
 
-        thread.start();
-        */
 
     }
 
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        KontaktListeLaden();
+    }
+
     public void KontaktListeLaden() {
-        //Lädt die Kontaktliste des eingeloggten Nutzers:
+        //Lädt die Kontaktliste des Nutzers
 
         progressBar.setVisibility(View.VISIBLE);
 

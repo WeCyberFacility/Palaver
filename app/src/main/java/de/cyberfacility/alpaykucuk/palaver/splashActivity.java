@@ -20,6 +20,7 @@ public class splashActivity extends Activity {
             public void run() {
                 //springe direkt zum hauptmenü
 
+
             }
         }, Splashscreenduration);
 

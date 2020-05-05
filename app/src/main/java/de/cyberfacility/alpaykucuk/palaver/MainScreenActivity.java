@@ -66,6 +66,7 @@ public class MainScreenActivity extends AppCompatActivity {
 
 
     public void KontaktListeLaden() {
+        //Lädt die Kontaktliste des eingeloggten Nutzers:
 
         progressBar.setVisibility(View.VISIBLE);
 
@@ -98,7 +99,7 @@ public class MainScreenActivity extends AppCompatActivity {
                     }
 
                     nutzerliste = formJSONARRAYtoNormalArray(list);
-                    printNutzerlist();
+                    //printNutzerlist();
 
                     nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, getApplicationContext()));
                     progressBar.setVisibility(View.INVISIBLE);

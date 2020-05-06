@@ -1,6 +1,7 @@
 package de.cyberfacility.alpaykucuk.palaver;
 
 import android.content.Context;
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -35,7 +36,7 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatHolder> {
     }
 
     @Override
-    public void onBindViewHolder(@NonNull ChatHolder holder, int position) {
+    public void onBindViewHolder(@NonNull ChatHolder holder, final int position) {
 
         //Um Profilbilder hinzuzufügen:
         /*Glide.with(context)
@@ -49,7 +50,9 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatHolder> {
         holder.contactlayout.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                //TODO: wechsel zu ChatDetails
+                chatActivity.currentEmpfänger = data.get(position);
+                Intent myIntent = new Intent(context, chatActivity.class);
+                context.startActivity(myIntent);
             }
         });
 

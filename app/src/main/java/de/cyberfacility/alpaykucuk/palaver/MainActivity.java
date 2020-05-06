@@ -18,6 +18,7 @@ public class MainActivity extends AppCompatActivity {
         checkLoggedIn();
     }
 
+    //TODO: Speichere eine eingeloggte Person in den Shared Prefences
 
 
     public void checkLoggedIn() {

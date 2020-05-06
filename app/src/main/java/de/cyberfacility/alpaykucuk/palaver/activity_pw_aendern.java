@@ -27,6 +27,10 @@ public class activity_pw_aendern extends AppCompatActivity {
 
     SweetAlertDialog dialog;
 
+
+    //TODO: currentNutzer's Passwort aktualisieren, Dialog anpassen, Edittexte anpassen
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

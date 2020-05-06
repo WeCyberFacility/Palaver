@@ -157,6 +157,7 @@ public class chatActivity extends AppCompatActivity {
                 messages = formJSONARRAYtoNormalArray(list);
 
                 message_rv.setAdapter(new messageAdapter(messages, getApplicationContext()));
+                message_rv.smoothScrollToPosition(messages.size()-1);
                 progressBar.setVisibility(View.INVISIBLE);
             }
         }, 2000);

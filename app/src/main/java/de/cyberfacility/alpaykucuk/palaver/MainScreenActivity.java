@@ -33,9 +33,13 @@ public class MainScreenActivity extends AppCompatActivity {
     static Nutzer currentNutzer;
     ProgressBar progressBar;
     JSONObject response;
+<<<<<<< HEAD
     ImageView addcontactbtn;
     ImageView settingsbtn;
 
+=======
+    ImageView settingbtn;
+>>>>>>> 672e2847d5e8607df6eb0a09f325fa7f72a1373f
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -62,7 +66,20 @@ public class MainScreenActivity extends AppCompatActivity {
             }
         });
 
+<<<<<<< HEAD
 
+=======
+        thread.start();
+        */
+     settingbtn = findViewById(R.id.settingsbtn);
+     settingbtn.setOnClickListener(new View.OnClickListener() {
+         @Override
+         public void onClick(View view) {
+             Intent myIntent = new Intent(MainScreenActivity.this, activity_pw_aendern.class);
+             startActivity(myIntent);
+         }
+     });
+>>>>>>> 672e2847d5e8607df6eb0a09f325fa7f72a1373f
     }
 
 

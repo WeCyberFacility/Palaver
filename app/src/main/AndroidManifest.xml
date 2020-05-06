@@ -16,7 +16,11 @@
         android:theme="@style/AppTheme"
         android:usesCleartextTraffic="true"
         tools:replace="android:icon">
+<<<<<<< HEAD
         <activity android:name=".chatActivity"></activity>
+=======
+        <activity android:name=".activity_pw_aendern"></activity>
+>>>>>>> 672e2847d5e8607df6eb0a09f325fa7f72a1373f
         <activity android:name=".KontaktAddenActivity" />
         <activity android:name=".MainScreenActivity" />
         <activity android:name=".RegisterActivity" />

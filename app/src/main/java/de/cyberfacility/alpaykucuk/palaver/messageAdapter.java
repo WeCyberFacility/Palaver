@@ -56,6 +56,18 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
     }
 
 
+    public void updateList(ArrayList<Message> itemList){
+        data.clear();
+//        this.list = itemList;
+//        list.addAll(itemList);
+//        notifyItemInserted(list.size());
+//        notifyDataSetChanged();
+        this.data.addAll(itemList);
+//        notifyItemInserted(list.size());
+        notifyDataSetChanged();
+    }
+
+
     public class MessageHolder extends RecyclerView.ViewHolder {
 
         ConstraintLayout messagelayout;

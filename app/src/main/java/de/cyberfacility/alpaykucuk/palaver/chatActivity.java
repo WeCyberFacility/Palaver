@@ -22,6 +22,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -36,11 +37,16 @@ public class chatActivity extends AppCompatActivity {
     ProgressBar progressBar;
     JSONObject response;
 
+
+
     public static ArrayList<Message> messages = new ArrayList<>();
 
     public static Nutzer currentEmpfänger;
+    messageAdapter messageAdapter;
 
     boolean initial = true;
+
+    static Thread listenToMessagesThread;
 
     //TODO: pulle durchgehend die Messages ab der letzten Message in der Liste
 
@@ -61,6 +67,7 @@ public class chatActivity extends AppCompatActivity {
         progressBar.setIndeterminateDrawable(foldingCube);
         progressBar.setVisibility(View.INVISIBLE);
 
+        messageAdapter = new messageAdapter(messages, getApplicationContext());
         empfängername.setText(currentEmpfänger.getNutzername());
         message_rv.setLayoutManager(new LinearLayoutManager(this));
 
@@ -95,27 +102,25 @@ public class chatActivity extends AppCompatActivity {
             }
         });
 
+
+    }
+
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+
     }
 
 
-    public void listenToChat() {
 
+    public void notifyRecycleView() {
         Thread thread = new Thread(new Runnable() {
 
             @Override
             public void run() {
                 try  {
-                    while(true) {
-
-                        final Handler handler = new Handler();
-                        handler.postDelayed(new Runnable() {
-                            @Override
-                            public void run() {
-                                MessagesAbZeitpunktLaden();
-                            }
-                        }, 1000);
-
-
+                    while (true) {
+                        messageAdapter.notifyDataSetChanged();
                     }
 
                 } catch (Exception e) {
@@ -125,6 +130,11 @@ public class chatActivity extends AppCompatActivity {
         });
 
         thread.start();
+    }
+
+
+    public void listenToChat() {
+        MessagesAbZeitpunktLaden();
     }
 
 
@@ -187,14 +197,18 @@ public class chatActivity extends AppCompatActivity {
 
                 messages = formJSONARRAYtoNormalArray(list);
 
-                message_rv.setAdapter(new messageAdapter(messages, getApplicationContext()));
+                messageAdapter = new messageAdapter(messages, chatActivity.this);
+                message_rv.setAdapter(messageAdapter);
                 if (messages.size() != 0) {
                     message_rv.smoothScrollToPosition(messages.size()-1);
                 }
                 progressBar.setVisibility(View.INVISIBLE);
-                listenToChat();
+
+
+
             }
         }, 2000);
+
 
     }
 
@@ -203,46 +217,75 @@ public class chatActivity extends AppCompatActivity {
     public void MessagesAbZeitpunktLaden() {
         //Lädt die Messages des Nutzers
 
-        Thread thread = new Thread(new Runnable() {
 
-            @Override
-            public void run() {
-                try  {
-                    response = MainScreenActivity.currentNutzer.getChatAbZeitpunkt(currentEmpfänger.getNutzername(), messages.get(messages.size()-1).getDate());
 
-                } catch (Exception e) {
-                    e.printStackTrace();
+        if (listenToMessagesThread == null) {
+            listenToMessagesThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try  {
+
+                        while (true) {
+
+                            response = MainScreenActivity.currentNutzer.getChatAbZeitpunkt(currentEmpfänger.getNutzername(), messages.get(messages.size()-1).getDate());
+
+                            while (response == null) {
+                                System.out.println("RESPONSE IS NULL");
+                            }
+                            JSONArray list = new JSONArray();
+                            try {
+                                list = (JSONArray)response.get("Data");
+                            } catch (JSONException e) {
+                                e.printStackTrace();
+                            }
+
+                            if (list.length() != 0) {
+                                System.out.println("Messages Größe: " + messages.size());
+                                messages.addAll(formJSONARRAYtoNormalArray(list));
+                                list = new JSONArray();
+                                response = null;
+                                runOnUiThread(new Runnable() {
+
+                                    @Override
+                                    public void run() {
+                                        updateList(messages);
+                                        //message_rv.smoothScrollToPosition(messages.size()-1);
+
+
+
+                                    }
+                                });
+                            }
+
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
 
-        thread.start();
-
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                while (response == null) {}
-                JSONArray list = new JSONArray();
-                try {
-                    list = (JSONArray)response.get("Data");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                messages.addAll(formJSONARRAYtoNormalArray(list));
-
-                message_rv.setAdapter(new messageAdapter(messages, getApplicationContext()));
-                if (messages.size() != 0) {
-                    message_rv.smoothScrollToPosition(messages.size()-1);
-                }
-            }
-        }, 1500);
+            listenToMessagesThread.start();
+        }
 
     }
 
 
 
+    public void updateList(ArrayList<Message> list){
+        if(messageAdapter != null) {
+            messageAdapter.updateList(list);
+        }
+    }
+
+    public void printList() {
+
+        for (Message currentMessage : messages) {
+            System.out.println(currentMessage.getData());
+        }
+
+    }
 
     public ArrayList<Message> formJSONARRAYtoNormalArray(JSONArray jsonArray) {
         ArrayList<Message> arrayList = new ArrayList(jsonArray.length());

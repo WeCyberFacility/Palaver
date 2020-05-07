@@ -111,7 +111,7 @@ public class MainScreenActivity extends AppCompatActivity {
                     nutzerliste = formJSONARRAYtoNormalArray(list);
                     //printNutzerlist();
 
-                    nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, getApplicationContext()));
+                    nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, MainScreenActivity.this));
                     progressBar.setVisibility(View.INVISIBLE);
                 }
             }, 2000);

@@ -97,6 +97,37 @@ public class chatActivity extends AppCompatActivity {
 
     }
 
+
+    public void listenToChat() {
+
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try  {
+                    while(true) {
+
+                        final Handler handler = new Handler();
+                        handler.postDelayed(new Runnable() {
+                            @Override
+                            public void run() {
+                                MessagesAbZeitpunktLaden();
+                            }
+                        }, 1000);
+
+
+                    }
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+    }
+
+
     public void nachrichtSenden() {
 
         Thread thread = new Thread(new Runnable() {
@@ -157,12 +188,61 @@ public class chatActivity extends AppCompatActivity {
                 messages = formJSONARRAYtoNormalArray(list);
 
                 message_rv.setAdapter(new messageAdapter(messages, getApplicationContext()));
-                message_rv.smoothScrollToPosition(messages.size()-1);
+                if (messages.size() != 0) {
+                    message_rv.smoothScrollToPosition(messages.size()-1);
+                }
                 progressBar.setVisibility(View.INVISIBLE);
+                listenToChat();
             }
         }, 2000);
 
     }
+
+
+
+    public void MessagesAbZeitpunktLaden() {
+        //Lädt die Messages des Nutzers
+
+        Thread thread = new Thread(new Runnable() {
+
+            @Override
+            public void run() {
+                try  {
+                    response = MainScreenActivity.currentNutzer.getChatAbZeitpunkt(currentEmpfänger.getNutzername(), messages.get(messages.size()-1).getDate());
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+        });
+
+        thread.start();
+
+        final Handler handler = new Handler();
+        handler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                while (response == null) {}
+                JSONArray list = new JSONArray();
+                try {
+                    list = (JSONArray)response.get("Data");
+                } catch (JSONException e) {
+                    e.printStackTrace();
+                }
+
+                messages.addAll(formJSONARRAYtoNormalArray(list));
+
+                message_rv.setAdapter(new messageAdapter(messages, getApplicationContext()));
+                if (messages.size() != 0) {
+                    message_rv.smoothScrollToPosition(messages.size()-1);
+                }
+            }
+        }, 1500);
+
+    }
+
+
+
 
     public ArrayList<Message> formJSONARRAYtoNormalArray(JSONArray jsonArray) {
         ArrayList<Message> arrayList = new ArrayList(jsonArray.length());

@@ -14,7 +14,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        logout_save();
         checkLoggedIn();
     }
 
@@ -26,31 +25,28 @@ public class MainActivity extends AppCompatActivity {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
         Boolean loggedin = preferences.getBoolean("loggedIn", false);
         System.out.println("LoggedIn: " + loggedin);
-        if(loggedin)
+        if(!loggedin)
         {
             Intent myIntent = new Intent(MainActivity.this, splashActivity.class);
             this.startActivity(myIntent);
             finish();
         }
         else {
-            Intent myIntent = new Intent(MainActivity.this, LoginActivity.class);
+            getLoggedNutzer();
+            Intent myIntent = new Intent(MainActivity.this, MainScreenActivity.class);
             this.startActivity(myIntent);
             finish();
         }
     }
 
 
-    public void login_save() {
+    public void getLoggedNutzer() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean("loggedIn",true);
-        editor.apply();
+        String nutzername = preferences.getString("Nutzername", "");
+        String passwort = preferences.getString("Passwort", "");
+        Nutzer currentLoggedNutzer = new Nutzer(nutzername, passwort);
+        MainScreenActivity.currentNutzer = currentLoggedNutzer;
     }
 
-    public void logout_save() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putBoolean("loggedIn",false);
-        editor.apply();
-    }
+
 }

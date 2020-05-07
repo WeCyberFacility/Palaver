@@ -94,6 +94,20 @@ public class Nutzer {
         return APIRequestHandler.DatenÜbermitteln("http://palaver.se.paluno.uni-due.de/api/message/get", json);
     }
 
+    public JSONObject getChatAbZeitpunkt(String empfängerNutzername, String date) throws Exception{
+        JSONObject json = new JSONObject();
+        try {
+            json.put("Username", getNutzername());
+            json.put("Password", getPasswort());
+            json.put("Recipient", empfängerNutzername);
+            json.put("Offset", date);
+
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return APIRequestHandler.DatenÜbermitteln("http://palaver.se.paluno.uni-due.de/api/message/getoffset", json);
+    }
+
     public JSONObject nachrichtSenden(String empfängerNutzername, String nachricht) throws Exception {
         JSONObject json = new JSONObject();
         try {

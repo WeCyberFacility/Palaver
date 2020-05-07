@@ -2,8 +2,11 @@ package de.cyberfacility.alpaykucuk.palaver;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -17,10 +20,11 @@ import org.json.JSONObject;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
-public class activity_pw_aendern extends AppCompatActivity {
+public class PasswortAendernActivity extends AppCompatActivity {
     EditText new_pw;
     EditText new_pw_wdh;
     ImageView pw_bestaetigenbtn;
+    ImageView logoutbtn;
 
     ProgressBar progressBar;
     JSONObject response;
@@ -39,7 +43,21 @@ public class activity_pw_aendern extends AppCompatActivity {
         new_pw = findViewById(R.id.new_Password);
         new_pw_wdh = findViewById(R.id.new_password_wdh);
         pw_bestaetigenbtn = findViewById(R.id.pw_bestaetigenbtn);
+        logoutbtn = findViewById(R.id.logoutbtn);
 
+        logoutbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                logout_save();
+                Intent myIntent = new Intent(getApplicationContext(), LoginActivity.class);
+                myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(myIntent);
+                finish();
+
+
+            }
+        });
 
         pw_bestaetigenbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -155,4 +173,12 @@ public class activity_pw_aendern extends AppCompatActivity {
                 .setContentText(message);
         dialog.show();
     }
+
+    public void logout_save() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("loggedIn",false);
+        editor.apply();
+    }
+
 }

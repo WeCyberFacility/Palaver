@@ -4,8 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
@@ -125,8 +127,12 @@ public class LoginActivity extends AppCompatActivity {
         switch (response) {
             case "Benutzer erfolgreich validiert":
                 MainScreenActivity.currentNutzer = new Nutzer(login_username.getText().toString(), login_password.getText().toString());
+                saveLoggedNutzer(MainScreenActivity.currentNutzer);
+                login_save();
                 Intent myIntent = new Intent(LoginActivity.this, MainScreenActivity.class);
                 startActivity(myIntent);
+                finish();
+
                 break;
                 default:
                     FehlerAnzeigen(response);
@@ -137,6 +143,30 @@ public class LoginActivity extends AppCompatActivity {
 
 
     }
+
+
+
+    public void saveLoggedNutzer(Nutzer currentNutzer) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("Nutzername", currentNutzer.getNutzername());
+        editor.putString("Passwort", currentNutzer.getPasswort());
+        editor.apply();
+    }
+    public void login_save() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("loggedIn",true);
+        editor.apply();
+    }
+
+    public void logout_save() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putBoolean("loggedIn",false);
+        editor.apply();
+    }
+
 
 
     public void FehlerAnzeigen(String message) {

@@ -4,12 +4,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 
@@ -21,8 +19,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-
-import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class MainScreenActivity extends AppCompatActivity {
 
@@ -66,7 +62,7 @@ public class MainScreenActivity extends AppCompatActivity {
         settingsbtn.setOnClickListener(new View.OnClickListener() {
          @Override
          public void onClick(View view) {
-             Intent myIntent = new Intent(MainScreenActivity.this, activity_pw_aendern.class);
+             Intent myIntent = new Intent(MainScreenActivity.this, PasswortAendernActivity.class);
              startActivity(myIntent);
              }
      });

@@ -3,6 +3,7 @@ package de.cyberfacility.alpaykucuk.palaver;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.app.Activity;
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 
@@ -19,7 +20,9 @@ public class splashActivity extends Activity {
             @Override
             public void run() {
                 //springe direkt zum hauptmenü
-
+                Intent myIntent = new Intent(splashActivity.this, LoginActivity.class);
+                startActivity(myIntent);
+                finish();
 
             }
         }, Splashscreenduration);

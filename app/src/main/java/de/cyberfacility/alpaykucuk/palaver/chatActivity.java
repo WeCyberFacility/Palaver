@@ -5,14 +5,18 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.Looper;
+import android.os.StrictMode;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.ybq.android.spinkit.sprite.Sprite;
 import com.github.ybq.android.spinkit.style.FoldingCube;
@@ -39,14 +43,18 @@ public class chatActivity extends AppCompatActivity {
 
 
 
-    public static ArrayList<Message> messages = new ArrayList<>();
+    public static ArrayList<Message> messages;
 
     public static Nutzer currentEmpfänger;
-    messageAdapter messageAdapter;
+    static messageAdapter messageAdapter;
 
     boolean initial = true;
 
+    nachrichtAnzeigenAbZeitpunkt nAZ;
+
     static Thread listenToMessagesThread;
+
+    Thread currentThread;
 
     //TODO: pulle durchgehend die Messages ab der letzten Message in der Liste
 
@@ -73,7 +81,7 @@ public class chatActivity extends AppCompatActivity {
 
 
 
-        MessagesLaden();
+
 
 
 
@@ -88,6 +96,9 @@ public class chatActivity extends AppCompatActivity {
                             .setTitleText("Oops...")
                             .setContentText("Bitte fülle alle Felder aus!")
                             .show();
+
+
+
                 } else {
 
                     nachrichtSenden();
@@ -103,11 +114,18 @@ public class chatActivity extends AppCompatActivity {
         });
 
 
+        MessagesLaden();
+
+
+
+
+
     }
 
     @Override
     public void onBackPressed() {
         super.onBackPressed();
+
 
     }
 
@@ -134,19 +152,16 @@ public class chatActivity extends AppCompatActivity {
 
 
     public void listenToChat() {
-        MessagesAbZeitpunktLaden();
-    }
-
-
-    public void nachrichtSenden() {
-
-        Thread thread = new Thread(new Runnable() {
+        currentThread = new Thread(new Runnable() {
 
             @Override
             public void run() {
                 try  {
-                    MainScreenActivity.currentNutzer.nachrichtSenden(currentEmpfänger.getNutzername(), chatsendentxt.getText().toString());
-                    chatsendentxt.setText("");
+                    Looper.prepare();
+                    while (true) {
+
+                        MessagesAbZeitpunktLaden();
+                    }
 
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -154,61 +169,28 @@ public class chatActivity extends AppCompatActivity {
             }
         });
 
-        thread.start();
+        currentThread.start();
+    }
+
+
+    public void nachrichtSenden() {
+
+        nachrichtSenden nS = new nachrichtSenden(chatsendentxt.getText().toString());
+        nS.execute((Void)null);
+        Toast.makeText(chatActivity.this, "gesendet!",Toast.LENGTH_SHORT).show();
+
     }
 
 
 
     public void MessagesLaden() {
         //Lädt die Messages des Nutzers
+        messages = new ArrayList<>();
+        nachrichtAnzeigen nA = new nachrichtAnzeigen(currentEmpfänger.getNutzername());
+        nA.execute((Void)null);
+        Toast.makeText(chatActivity.this, "Aktualisiert!",Toast.LENGTH_SHORT).show();
 
-        if (initial) {
-            progressBar.setVisibility(View.VISIBLE);
-            initial  = false;
-        }
-
-        Thread thread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try  {
-                    response = MainScreenActivity.currentNutzer.getChat(currentEmpfänger.getNutzername());
-
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-
-        thread.start();
-
-
-        final Handler handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                while (response == null) {}
-                JSONArray list = new JSONArray();
-                try {
-                    list = (JSONArray)response.get("Data");
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
-
-                messages = formJSONARRAYtoNormalArray(list);
-
-                messageAdapter = new messageAdapter(messages, chatActivity.this);
-                message_rv.setAdapter(messageAdapter);
-                if (messages.size() != 0) {
-                    message_rv.smoothScrollToPosition(messages.size()-1);
-                }
-                progressBar.setVisibility(View.INVISIBLE);
-
-
-
-            }
-        }, 2000);
-
+        listenToChat();
 
     }
 
@@ -218,55 +200,13 @@ public class chatActivity extends AppCompatActivity {
         //Lädt die Messages des Nutzers
 
 
-
-        if (listenToMessagesThread == null) {
-            listenToMessagesThread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try  {
-
-                        while (true) {
-
-                            response = MainScreenActivity.currentNutzer.getChatAbZeitpunkt(currentEmpfänger.getNutzername(), messages.get(messages.size()-1).getDate());
-
-                            while (response == null) {
-                                System.out.println("RESPONSE IS NULL");
-                            }
-                            JSONArray list = new JSONArray();
-                            try {
-                                list = (JSONArray)response.get("Data");
-                            } catch (JSONException e) {
-                                e.printStackTrace();
-                            }
-
-                            if (list.length() != 0) {
-                                System.out.println("Messages Größe: " + messages.size());
-                                messages.addAll(formJSONARRAYtoNormalArray(list));
-                                list = new JSONArray();
-                                response = null;
-                                runOnUiThread(new Runnable() {
-
-                                    @Override
-                                    public void run() {
-                                        updateList(messages);
-                                        //message_rv.smoothScrollToPosition(messages.size()-1);
-
-
-
-                                    }
-                                });
-                            }
-
-                        }
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            listenToMessagesThread.start();
+        if (nAZ == null) {
+            nAZ = new nachrichtAnzeigenAbZeitpunkt(currentEmpfänger.getNutzername());
+            nAZ.execute((Void)null);
+        } else {
+            nAZ.cancel(true);
+            nAZ = new nachrichtAnzeigenAbZeitpunkt(currentEmpfänger.getNutzername());
+            nAZ.execute((Void)null);
         }
 
     }
@@ -305,4 +245,219 @@ public class chatActivity extends AppCompatActivity {
         }
         return arrayList;
     }
+
+
+    public class nachrichtSenden extends AsyncTask<Void,Void,Boolean> {
+
+        String nachrichtText;
+        String mimetype;
+        JSONObject response = new JSONObject();
+
+
+
+        public nachrichtSenden(String nachrichtEditText1){
+            nachrichtText=nachrichtEditText1;
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+            StrictMode.setThreadPolicy(policy);
+
+            try{
+
+                response = MainScreenActivity.currentNutzer.nachrichtSenden(currentEmpfänger.getNutzername(), nachrichtText);
+
+            }
+
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            int msgType = 0;
+
+            try {
+                msgType = response.getInt("MsgType");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if (msgType == 1) {
+
+                //        Toast.makeText(Chat.this, "Nachricht gesendet", Toast.LENGTH_SHORT).show();
+
+
+            } else if (msgType == 0) {
+
+                Toast.makeText(chatActivity.this, "Nachricht senden fehlgeschlagen!", Toast.LENGTH_SHORT).show();
+
+            } else {
+                Toast.makeText(chatActivity.this, "Fehler", Toast.LENGTH_SHORT).show();
+            }
+
+
+
+        }
+    }
+
+
+    public class nachrichtAnzeigenAbZeitpunkt extends AsyncTask<Void,Void,Boolean> {
+        String freund;
+        JSONObject response = new JSONObject();
+
+
+
+
+        public nachrichtAnzeigenAbZeitpunkt(String friend){
+            freund=friend;
+
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+            StrictMode.setThreadPolicy(policy);
+
+
+            System.out.println("Messages Länge: " + messages.size());
+
+            try{
+
+                response = MainScreenActivity.currentNutzer.getChatAbZeitpunkt(currentEmpfänger.getNutzername(), messages.get(messages.size()-1).getDate());
+
+            }
+
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            int msgType = 0;
+
+            try {
+                msgType = response.getInt("MsgType");
+
+
+                if (msgType == 1) {
+
+                    JSONArray list = new JSONArray();
+                    try {
+                        list = (JSONArray)response.get("Data");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    if (list.length() != 0) {
+
+                        messages.addAll(formJSONARRAYtoNormalArray(list));
+
+                        messageAdapter = new messageAdapter(messages, chatActivity.this);
+                        message_rv.setAdapter(messageAdapter);
+                        if (messages.size() != 0) {
+                            message_rv.smoothScrollToPosition(messages.size() - 1);
+                        }
+                        //     Toast.makeText(Chat.this, "Nachrichten werden erfolgreich angezeigt!", Toast.LENGTH_SHORT).show();
+
+
+                    }
+                } else {
+                    Toast.makeText(chatActivity.this, "Fehler", Toast.LENGTH_SHORT).show();
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+    public class nachrichtAnzeigen extends AsyncTask<Void,Void,Boolean> {
+        String freund;
+        JSONObject response = new JSONObject();
+
+
+
+        public nachrichtAnzeigen(String friend){
+            freund=friend;
+
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+            StrictMode.setThreadPolicy(policy);
+
+
+            try{
+
+                response = MainScreenActivity.currentNutzer.getChat(currentEmpfänger.getNutzername());
+
+            }
+
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            int msgType = 0;
+
+            try {
+                msgType = response.getInt("MsgType");
+
+
+                if (msgType == 1) {
+
+
+                    JSONArray list = new JSONArray();
+                    try {
+                        list = (JSONArray)response.get("Data");
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+
+                    messages = formJSONARRAYtoNormalArray(list);
+
+                    messageAdapter = new messageAdapter(messages, chatActivity.this);
+                    message_rv.setAdapter(messageAdapter);
+                    if (messages.size() != 0) {
+                        message_rv.smoothScrollToPosition(messages.size()-1);
+                    }
+                    //     Toast.makeText(Chat.this, "Nachrichten werden erfolgreich angezeigt!", Toast.LENGTH_SHORT).show();
+
+                } else {
+                    Toast.makeText(chatActivity.this, "Fehler", Toast.LENGTH_SHORT).show();
+                }
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

@@ -52,9 +52,7 @@ public class chatActivity extends AppCompatActivity {
 
     nachrichtAnzeigenAbZeitpunkt nAZ;
 
-    static Thread listenToMessagesThread;
-
-    Thread currentThread;
+    static Thread currentThread;
 
     //TODO: pulle durchgehend die Messages ab der letzten Message in der Liste
 
@@ -152,24 +150,47 @@ public class chatActivity extends AppCompatActivity {
 
 
     public void listenToChat() {
-        currentThread = new Thread(new Runnable() {
 
-            @Override
-            public void run() {
-                try  {
-                    Looper.prepare();
-                    while (true) {
+        if (currentThread == null) {
+            currentThread = new Thread(new Runnable() {
 
-                        MessagesAbZeitpunktLaden();
+                @Override
+                public void run() {
+                    try  {
+                        Looper.prepare();
+                        while (true) {
+
+                            MessagesAbZeitpunktLaden();
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-
-                } catch (Exception e) {
-                    e.printStackTrace();
                 }
-            }
-        });
+            });
 
-        currentThread.start();
+            currentThread.start();
+        } else {
+            currentThread.interrupt();
+            currentThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try  {
+                        Looper.prepare();
+                        while (true) {
+
+                            MessagesAbZeitpunktLaden();
+                        }
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
+
+            currentThread.start();
+        }
     }
 
 

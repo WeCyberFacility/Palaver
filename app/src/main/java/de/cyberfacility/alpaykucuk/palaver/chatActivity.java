@@ -87,6 +87,8 @@ public class chatActivity extends AppCompatActivity {
             @Override
             public void onClick(View view) {
 
+
+
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(chatsendentxt.getWindowToken(), 0);
                 if(chatsendentxt.getText().toString().equals("")) {
@@ -95,17 +97,12 @@ public class chatActivity extends AppCompatActivity {
                             .setContentText("Bitte fülle alle Felder aus!")
                             .show();
 
+                    chatsendentxt.setText("");
 
 
                 } else {
 
                     nachrichtSenden();
-                    final Handler handler = new Handler();
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                        }
-                    }, 350);
                 }
             }
         });
@@ -200,6 +197,7 @@ public class chatActivity extends AppCompatActivity {
         nachrichtSenden nS = new nachrichtSenden(chatsendentxt.getText().toString());
         nS.execute((Void)null);
         Toast.makeText(chatActivity.this, "gesendet!",Toast.LENGTH_SHORT).show();
+        chatsendentxt.setText("");
 
     }
 

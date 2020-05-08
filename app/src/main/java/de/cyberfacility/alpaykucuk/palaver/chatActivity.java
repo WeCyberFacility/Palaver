@@ -104,7 +104,6 @@ public class chatActivity extends AppCompatActivity {
                     handler.postDelayed(new Runnable() {
                         @Override
                         public void run() {
-                            MessagesLaden();
                         }
                     }, 350);
                 }
@@ -159,6 +158,8 @@ public class chatActivity extends AppCompatActivity {
                     try  {
                         Looper.prepare();
                         while (true) {
+
+
 
                             MessagesAbZeitpunktLaden();
                         }
@@ -219,7 +220,6 @@ public class chatActivity extends AppCompatActivity {
 
     public void MessagesAbZeitpunktLaden() {
         //Lädt die Messages des Nutzers
-
 
         if (nAZ == null) {
             nAZ = new nachrichtAnzeigenAbZeitpunkt(currentEmpfänger.getNutzername());
@@ -356,9 +356,6 @@ public class chatActivity extends AppCompatActivity {
 
             StrictMode.setThreadPolicy(policy);
 
-
-            System.out.println("Messages Länge: " + messages.size());
-
             try{
 
                 response = MainScreenActivity.currentNutzer.getChatAbZeitpunkt(currentEmpfänger.getNutzername(), messages.get(messages.size()-1).getDate());
@@ -388,13 +385,18 @@ public class chatActivity extends AppCompatActivity {
                     if (list.length() != 0) {
 
                         messages.addAll(formJSONARRAYtoNormalArray(list));
+                        runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
 
-                        messageAdapter = new messageAdapter(messages, chatActivity.this);
-                        message_rv.setAdapter(messageAdapter);
-                        if (messages.size() != 0) {
-                            message_rv.smoothScrollToPosition(messages.size() - 1);
-                        }
-                        //     Toast.makeText(Chat.this, "Nachrichten werden erfolgreich angezeigt!", Toast.LENGTH_SHORT).show();
+                                messageAdapter = new messageAdapter(messages, chatActivity.this);
+                                message_rv.setAdapter(messageAdapter);
+                                if (messages.size() != 0) {
+                                    message_rv.smoothScrollToPosition(messages.size() - 1);
+                                }
+                            }
+                        });
+
 
 
                     }

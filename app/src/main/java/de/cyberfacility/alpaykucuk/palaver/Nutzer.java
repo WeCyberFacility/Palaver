@@ -1,5 +1,7 @@
 package de.cyberfacility.alpaykucuk.palaver;
 
+import com.google.firebase.iid.FirebaseInstanceId;
+
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -120,6 +122,25 @@ public class Nutzer {
             e.printStackTrace();
         }
         return APIRequestHandler.DatenÜbermitteln("http://palaver.se.paluno.uni-due.de/api/message/send", json);
+    }
+
+
+    public JSONObject tokenmoken(String benutzernameText, String passwordText) throws Exception {
+
+        JSONObject json = new JSONObject();
+        String token = FirebaseInstanceId.getInstance().getToken();
+
+        try {
+            json.put("Username", benutzernameText);
+            json.put("Password", passwordText);
+            json.put("PushToken", token);
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return APIRequestHandler.DatenÜbermitteln("http://palaver.se.paluno.uni-due.de/api/user/pushtoken",
+                json);
+
+
     }
 
 

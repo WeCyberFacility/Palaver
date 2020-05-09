@@ -51,7 +51,9 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatHolder> {
             @Override
             public void onClick(View view) {
                 chatActivity.currentEmpfänger = data.get(position);
-                Intent myIntent = new Intent(context, chatActivity.class);
+                chatActivity currentchChatActivity = new chatActivity();
+                //FireBase.currentChatActivity = currentchChatActivity;
+                Intent myIntent = new Intent(context, currentchChatActivity.getClass());
                 context.startActivity(myIntent);
             }
         });

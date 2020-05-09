@@ -2,8 +2,11 @@ package de.cyberfacility.alpaykucuk.palaver;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -30,6 +33,7 @@ public class PasswortAendernActivity extends AppCompatActivity {
     JSONObject response;
 
     SweetAlertDialog dialog;
+    SharedPreferences sharedPreferences;
 
 
     //TODO: currentNutzer's Passwort aktualisieren, Dialog anpassen, Edittexte anpassen
@@ -39,6 +43,8 @@ public class PasswortAendernActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_pw_aendern);
+
+        sharedPreferences = getPreferences(MODE_PRIVATE);
 
         new_pw = findViewById(R.id.new_Password);
         new_pw_wdh = findViewById(R.id.new_password_wdh);
@@ -54,6 +60,8 @@ public class PasswortAendernActivity extends AppCompatActivity {
                 myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(myIntent);
                 finish();
+
+
 
 
             }
@@ -72,10 +80,16 @@ public class PasswortAendernActivity extends AppCompatActivity {
         progressBar.setVisibility(View.INVISIBLE);
     }
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
     public void pwcheck1(){
         progressBar.setVisibility(View.VISIBLE);
-        if(new_pw.getText().toString().equals("") || new_pw_wdh.getText().toString().equals("")){
-            FehlerAnzeigen("Bitte fülle alle Felder");
+        if(new_pw.getText().toString().equals("") || new_pw_wdh.getText().toString().equals("") || !isNetworkAvailable()){
+            FehlerAnzeigen("Es ist ein Fehler aufgetreten!");
             progressBar.setVisibility(View.INVISIBLE);
         }else {
             pwcheck2();

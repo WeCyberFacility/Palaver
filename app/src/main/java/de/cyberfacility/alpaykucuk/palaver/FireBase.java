@@ -35,7 +35,6 @@ public class FireBase extends FirebaseMessagingService {
 
     public void versendeBroadcast() {
         Intent intent = new Intent(); // Neuen Intent anlegen
-
         intent.setAction("de.cyberfacility.alpaykucuk.palaver");
         //intent.addFlags(Intent.FLAG_INCLUDE_STOPPED_PACKAGES);
         System.out.println("Broadscast versendet!");

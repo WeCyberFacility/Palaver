@@ -4,7 +4,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -31,12 +35,14 @@ public class MainScreenActivity extends AppCompatActivity {
     JSONObject response;
     ImageView addcontactbtn;
     ImageView settingsbtn;
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main_screen);
 
+        sharedPreferences = getPreferences(MODE_PRIVATE);
         addcontactbtn = findViewById(R.id.addcontactbtn);
         settingsbtn = findViewById(R.id.settingsbtn);
         nutzer_rv = findViewById(R.id.chatsrv);
@@ -46,7 +52,18 @@ public class MainScreenActivity extends AppCompatActivity {
         progressBar.setVisibility(View.INVISIBLE);
 
         nutzer_rv.setLayoutManager(new LinearLayoutManager(this));
-        KontaktListeLaden();
+
+
+        if(isNetworkAvailable()) {
+            KontaktListeLaden();
+        } else {
+
+            currentNutzer.getNutzerOffline(sharedPreferences);
+            nutzerliste = currentNutzer.getFreunde();
+            nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, MainScreenActivity.this));
+            //speichereFreundeOffline();
+
+        }
 
 
         addcontactbtn.setOnClickListener(new View.OnClickListener() {
@@ -69,11 +86,37 @@ public class MainScreenActivity extends AppCompatActivity {
     }
 
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
     @Override
     protected void onResume() {
         super.onResume();
-        KontaktListeLaden();
+        if(isNetworkAvailable()) {
+            KontaktListeLaden();
+        } else {
+
+            currentNutzer.getNutzerOffline(sharedPreferences);
+            nutzerliste = currentNutzer.getFreunde();
+            nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, MainScreenActivity.this));
+
+
+        }
     }
+
+    public void speichereFreundeOffline() {
+
+        for (Nutzer currNu : currentNutzer.getFreunde()) {
+
+
+            currNu.saveNutzerOffline(sharedPreferences);
+        }
+    }
+
+
 
     public void KontaktListeLaden() {
         //Lädt die Kontaktliste des Nutzers
@@ -113,6 +156,8 @@ public class MainScreenActivity extends AppCompatActivity {
 
                     nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, MainScreenActivity.this));
                     progressBar.setVisibility(View.INVISIBLE);
+                    currentNutzer.setFreunde(nutzerliste);
+                    currentNutzer.saveNutzerOffline(sharedPreferences);
                 }
             }, 2000);
 

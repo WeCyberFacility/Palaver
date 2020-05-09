@@ -4,6 +4,9 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -27,11 +30,13 @@ public class KontaktAddenActivity extends AppCompatActivity {
     ImageView addcontact;
     ProgressBar progressBar;
     JSONObject response;
+    SharedPreferences sharedPreferences;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_kontakt_adden);
+        sharedPreferences = getPreferences(MODE_PRIVATE);
 
         newcontacttxt = findViewById(R.id.newcontacttxt);
         addcontact = findViewById(R.id.addcontactconfirm);
@@ -51,21 +56,27 @@ public class KontaktAddenActivity extends AppCompatActivity {
 
     }
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
     public void addContact(){
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(newcontacttxt.getWindowToken(), 0);
 
         progressBar.setVisibility(View.VISIBLE);
-        if (newcontacttxt.getText().toString().equals("")) {
+        if (newcontacttxt.getText().toString().equals("") || !isNetworkAvailable()) {
             new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
                     .setTitleText("Oops...")
-                    .setContentText("Bitte fülle alle Felder aus!")
+                    .setContentText("Etwas ist schief gelaufen!")
                     .show();
             progressBar.setVisibility(View.INVISIBLE);
         } else {
 
-
-            kontaktHinzufügen(newcontacttxt.getText().toString());
+            final Nutzer newNutzer = new Nutzer(newcontacttxt.getText().toString());
+            kontaktHinzufügen(newNutzer.getNutzername());
 
 
             final Handler handler = new Handler();
@@ -81,6 +92,9 @@ public class KontaktAddenActivity extends AppCompatActivity {
                         e.printStackTrace();
                     }
                     checkResponseFromLogin(responseString);
+
+                    MainScreenActivity.currentNutzer.addFreund(newNutzer);
+                    MainScreenActivity.currentNutzer.saveNutzerOffline(sharedPreferences);
 
                     progressBar.setVisibility(View.INVISIBLE);
                 }
@@ -111,6 +125,7 @@ public class KontaktAddenActivity extends AppCompatActivity {
             case "Freund hinzugefügt":
                 ErfolgAnzeigen(response);
                 newcontacttxt.setText("");
+
                 break;
             default:
                 FehlerAnzeigen(response);

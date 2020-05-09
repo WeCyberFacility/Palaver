@@ -2,6 +2,9 @@ package de.cyberfacility.alpaykucuk.palaver;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.view.View;
@@ -54,8 +57,8 @@ SweetAlertDialog dialog;
     public void register(){
         progressBar.setVisibility(View.VISIBLE);
         if(register_username.getText().toString().equals("")|| register_password.getText().toString().equals("")||
-                register_password_wdh.getText().toString().equals("")){
-                    FehlerAnzeigen("Bitte fülle alle Felder aus!");
+                register_password_wdh.getText().toString().equals("") || !isNetworkAvailable()){
+                    FehlerAnzeigen("Mach Internet an du depp!");
                     progressBar.setVisibility(View.INVISIBLE);
         }else {
             passwordequal();
@@ -145,6 +148,12 @@ SweetAlertDialog dialog;
                 .setTitleText("Oops...")
                 .setContentText(message)
                 .show();
+    }
+
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
     public void ErfolgAnzeigen(String message) {

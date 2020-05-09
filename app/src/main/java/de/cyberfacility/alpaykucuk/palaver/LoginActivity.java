@@ -5,6 +5,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
@@ -35,10 +37,14 @@ public class LoginActivity extends AppCompatActivity {
 
     JSONObject response;
 
+    SharedPreferences sharedPreferences;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        sharedPreferences = getPreferences(MODE_PRIVATE);
 
         login_username = findViewById(R.id.login_username);
         login_password = findViewById(R.id.login_password);
@@ -68,6 +74,13 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 
+    private boolean isNetworkAvailable() {
+        ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
+        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+    }
+
+
 
     public void login() {
 
@@ -75,15 +88,16 @@ public class LoginActivity extends AppCompatActivity {
         imm.hideSoftInputFromWindow(login_password.getWindowToken(), 0);
 
         progressBar.setVisibility(View.VISIBLE);
-        if (login_username.getText().toString().equals("") || login_password.getText().toString().equals("")) {
+        if (login_username.getText().toString().equals("") || login_password.getText().toString().equals("") || !isNetworkAvailable()) {
             new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
                     .setTitleText("Oops...")
-                    .setContentText("Bitte fülle alle Felder aus!")
+                    .setContentText("Ein Fehler ist aufgetreten!")
                     .show();
             progressBar.setVisibility(View.INVISIBLE);
         } else {
 
             final Nutzer nutzer = new Nutzer(login_username.getText().toString().trim(), login_password.getText().toString().trim());
+            nutzer.saveNutzerOffline(sharedPreferences);
             Thread thread = new Thread(new Runnable() {
 
                 @Override

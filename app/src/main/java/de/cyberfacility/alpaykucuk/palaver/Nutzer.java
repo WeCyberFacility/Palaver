@@ -1,9 +1,14 @@
 package de.cyberfacility.alpaykucuk.palaver;
 
+import android.content.SharedPreferences;
+
 import com.google.firebase.iid.FirebaseInstanceId;
+import com.google.gson.Gson;
 
 import org.json.JSONException;
 import org.json.JSONObject;
+
+import java.util.ArrayList;
 
 public class Nutzer {
 
@@ -11,6 +16,10 @@ public class Nutzer {
     private String passwort;
 
     private String pictureurl;
+
+    private ArrayList<Message> messages = new ArrayList<>();
+
+    private ArrayList<Nutzer> freunde = new ArrayList<>();
 
 
     public Nutzer(String nutzername, String passwort) {
@@ -45,6 +54,62 @@ public class Nutzer {
     public void setPictureurl(String pictureurl) {
         this.pictureurl = pictureurl;
     }
+
+    public ArrayList<Message> getMessages() {
+        return messages;
+    }
+
+    public void setMessages(ArrayList<Message> messages) {
+        this.messages = messages;
+    }
+
+    public ArrayList<Nutzer> getFreunde() {
+        return freunde;
+    }
+
+    public void setFreunde(ArrayList<Nutzer> freunde) {
+        this.freunde = freunde;
+    }
+
+    public void addFreund(Nutzer newFriend) {
+        getFreunde().add(newFriend);
+    }
+
+    public void saveNutzerOffline(SharedPreferences sharedPreferences) {
+
+        SharedPreferences.Editor prefsEditor = sharedPreferences.edit();
+        Gson gson = new Gson();
+        String json = gson.toJson(this);
+        prefsEditor.putString(getNutzername(), json);
+        prefsEditor.commit();
+
+
+    }
+
+    public void getNutzerOffline(SharedPreferences sharedPreferences) {
+
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString(getNutzername(), "");
+        Nutzer currNutzer = gson.fromJson(json, Nutzer.class);
+        this.setMessages(currNutzer.getMessages());
+        this.setFreunde(currNutzer.getFreunde());
+
+    }
+
+
+    public Nutzer searchFreundInListe(String nutzername) {
+
+        for (Nutzer currFreund : getFreunde()) {
+            if (currFreund.getNutzername().equals(nutzername)) {
+                return currFreund;
+            }
+        }
+
+        return new Nutzer("notfound");
+
+    }
+
+
 
     //API Abfragen:
 

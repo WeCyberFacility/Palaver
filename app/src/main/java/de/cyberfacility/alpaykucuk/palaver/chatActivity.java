@@ -4,16 +4,13 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
-import android.os.Looper;
 import android.os.StrictMode;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -32,7 +29,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
 
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
@@ -45,7 +41,8 @@ public class chatActivity extends AppCompatActivity{
     EditText chatsendentxt;
 
     ProgressBar progressBar;
-    JSONObject response;
+
+    SharedPreferences sharedPreferences;
 
 
 
@@ -54,26 +51,12 @@ public class chatActivity extends AppCompatActivity{
     public static Nutzer currentEmpfänger;
     static messageAdapter messageAdapter;
 
-    boolean initial = true;
-
-    nachrichtAnzeigenAbZeitpunkt nAZ;
-
-    static Thread currentThread;
-
-    FireBase fireBase = new FireBase();
-
     NotificationReciever notificationReciever = new NotificationReciever();
-    IntentFilter intentFilter;
-
-
-    //TODO: pulle durchgehend die Messages ab der letzten Message in der Liste
 
 
     @Override
     protected void onResume() {
         super.onResume();
-        //IntentFilter filter = new IntentFilter();
-        //registerReceiver(notificationReciever, filter);
     }
 
     @Override
@@ -89,8 +72,7 @@ public class chatActivity extends AppCompatActivity{
         FirebaseApp.initializeApp(this);
 
         notificationReciever.currChatActivity = this;
-        //IntentFilter-Objekt instanziieren
-        //intentFilter = new IntentFilter(Intent.ACTION_BATTERY_LOW);
+        sharedPreferences = getPreferences(MODE_PRIVATE);
 
         IntentFilter filter = new IntentFilter();
         filter.addAction("de.cyberfacility.alpaykucuk.palaver");
@@ -110,13 +92,17 @@ public class chatActivity extends AppCompatActivity{
 
         messageAdapter = new messageAdapter(messages, getApplicationContext());
         empfängername.setText(currentEmpfänger.getNutzername());
-        message_rv.setLayoutManager(new LinearLayoutManager(this));
-
+        LinearLayoutManager layoutManager = new LinearLayoutManager(getApplicationContext() ,RecyclerView.VERTICAL, false);
+        layoutManager.setStackFromEnd(true);
+        message_rv.setLayoutManager(layoutManager);
         message_rv.setAdapter(messageAdapter);
 
-        TokenAktualisieren();
 
+        if (isNetworkAvailable()) {
+            TokenAktualisieren();
+        } else {
 
+        }
 
 
         sendenbtn.setOnClickListener(new View.OnClickListener() {
@@ -143,7 +129,22 @@ public class chatActivity extends AppCompatActivity{
             }
         });
 
-        pullMessages();
+
+        if (isNetworkAvailable()) {
+            pullMessages();
+        } else {
+
+            System.out.println("Freunde: " + MainScreenActivity.currentNutzer.getFreunde().size());
+            MainScreenActivity.currentNutzer.getNutzerOffline(sharedPreferences);
+            messages = MainScreenActivity.currentNutzer.searchFreundInListe(currentEmpfänger.getNutzername()).getMessages();
+
+            messageAdapter.updateList(messages);
+            System.out.println("Messages größe: " + messages.size());
+            message_rv.scrollToPosition(messages.size() - 1);
+
+        }
+
+
 
 
 
@@ -251,7 +252,6 @@ public class chatActivity extends AppCompatActivity{
     public class nachrichtSenden extends AsyncTask<Void,Void,Boolean> {
 
         String nachrichtText;
-        String mimetype;
         JSONObject response = new JSONObject();
 
 
@@ -283,7 +283,6 @@ public class chatActivity extends AppCompatActivity{
                 e.printStackTrace();
             }
 
-            refreshList();
 
             int msgType = 0;
 
@@ -296,7 +295,7 @@ public class chatActivity extends AppCompatActivity{
 
             if (msgType == 1) {
 
-                //        Toast.makeText(Chat.this, "Nachricht gesendet", Toast.LENGTH_SHORT).show();
+                refreshList();
 
 
             } else if (msgType == 0) {
@@ -337,7 +336,11 @@ public class chatActivity extends AppCompatActivity{
 
             try{
 
-                response = MainScreenActivity.currentNutzer.getChatAbZeitpunkt(currentEmpfänger.getNutzername(), messages.get(messages.size()-1).getDate());
+                if(messages.size() == 0) {
+                    pullMessages();
+                } else {
+                    response = MainScreenActivity.currentNutzer.getChatAbZeitpunkt(currentEmpfänger.getNutzername(), messages.get(messages.size()-1).getDate());
+                }
 
             }
 
@@ -349,35 +352,42 @@ public class chatActivity extends AppCompatActivity{
             int msgType = 0;
 
             try {
-                msgType = response.getInt("MsgType");
 
+                if (messages.size() == 0) {
 
-                if (msgType == 1) {
-
-                    JSONArray list = new JSONArray();
-                    try {
-                        list = (JSONArray)response.get("Data");
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    if (list.length() != 0) {
-
-                        messages.addAll(formJSONARRAYtoNormalArray(list));
-                        runOnUiThread(new Runnable() {
-                            @Override
-                            public void run() {
-
-                                messageAdapter = new messageAdapter(messages, getApplicationContext());
-                                message_rv.setAdapter(messageAdapter);
-                            }
-                        });
-
-
-
-                    }
                 } else {
-                    Toast.makeText(chatActivity.this, "Fehler", Toast.LENGTH_SHORT).show();
+                    msgType = response.getInt("MsgType");
+
+
+                    if (msgType == 1) {
+
+                        JSONArray list = new JSONArray();
+                        try {
+                            list = (JSONArray) response.get("Data");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        if (list.length() != 0) {
+
+                            messages.addAll(formJSONARRAYtoNormalArray(list));
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    messageAdapter.updateList(messages);
+                                    message_rv.scrollToPosition(messages.size() - 1);
+                                    MainScreenActivity.currentNutzer.searchFreundInListe(currentEmpfänger.getNutzername()).setMessages(messages);
+                                    MainScreenActivity.currentNutzer.saveNutzerOffline(sharedPreferences);
+                                }
+                            });
+
+
+                        }
+                    } else {
+                        Toast.makeText(chatActivity.this, "Fehler", Toast.LENGTH_SHORT).show();
+                    }
+
                 }
 
 
@@ -444,13 +454,14 @@ public class chatActivity extends AppCompatActivity{
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-
-                            messageAdapter = new messageAdapter(messages, getApplicationContext());
-                            message_rv.setAdapter(messageAdapter);
+                            messageAdapter.updateList(messages);
+                            message_rv.scrollToPosition(messages.size() - 1);
+                            MainScreenActivity.currentNutzer.searchFreundInListe(currentEmpfänger.getNutzername()).setMessages(messages);
+                            MainScreenActivity.currentNutzer.saveNutzerOffline(sharedPreferences);
+                            MainScreenActivity.currentNutzer.getNutzerOffline(sharedPreferences);
 
                         }
                     });
-                    //     Toast.makeText(Chat.this, "Nachrichten werden erfolgreich angezeigt!", Toast.LENGTH_SHORT).show();
 
                 } else {
                     Toast.makeText(chatActivity.this, "Fehler", Toast.LENGTH_SHORT).show();
@@ -474,8 +485,7 @@ public class chatActivity extends AppCompatActivity{
 
 
     public class Tokenmoken extends AsyncTask<Void, Void, Boolean> {
-        String tokenName;
-        String tokenPassword;
+
         JSONObject response;
 
 
@@ -520,8 +530,6 @@ public class chatActivity extends AppCompatActivity{
             }
 
             if (msgType == 1) {
-
-                // Toast.makeText(MainActivity.this, "PushToken erfolgreich aktualisiert!", Toast.LENGTH_SHORT).show();
 
             }
             else{

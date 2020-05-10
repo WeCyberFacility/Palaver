@@ -20,6 +20,8 @@ import android.widget.TextView;
 
 import com.github.ybq.android.spinkit.sprite.Sprite;
 import com.github.ybq.android.spinkit.style.FoldingCube;
+import com.google.gson.Gson;
+import com.preference.PowerPreference;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -43,6 +45,7 @@ public class LoginActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+        PowerPreference.init(this);
 
         sharedPreferences = getPreferences(MODE_PRIVATE);
 
@@ -96,8 +99,9 @@ public class LoginActivity extends AppCompatActivity {
             progressBar.setVisibility(View.INVISIBLE);
         } else {
 
-            final Nutzer nutzer = new Nutzer(login_username.getText().toString().trim(), login_password.getText().toString().trim());
-            nutzer.saveNutzerOffline(sharedPreferences);
+            final Nutzer nutzer = new Nutzer(login_username.getText().toString(), login_password.getText().toString());
+            Nutzer curN = new Nutzer(login_username.getText().toString(), login_password.getText().toString());
+            PowerPreference.getFileByName("Offline").putObject("OfflineNutzer", curN);
             Thread thread = new Thread(new Runnable() {
 
                 @Override
@@ -140,7 +144,8 @@ public class LoginActivity extends AppCompatActivity {
 
         switch (response) {
             case "Benutzer erfolgreich validiert":
-                MainScreenActivity.currentNutzer = new Nutzer(login_username.getText().toString(), login_password.getText().toString());
+
+                MainScreenActivity.currentNutzer = PowerPreference.getFileByName("Offline").getObject("OfflineNutzer", Nutzer.class);
                 saveLoggedNutzer(MainScreenActivity.currentNutzer);
                 login_save();
                 Intent myIntent = new Intent(LoginActivity.this, MainScreenActivity.class);
@@ -156,6 +161,15 @@ public class LoginActivity extends AppCompatActivity {
         }
 
 
+    }
+
+    public Nutzer getNutzerOffline(SharedPreferences sharedPreferences, String nutzername) {
+
+        Gson gson = new Gson();
+        String json = sharedPreferences.getString(nutzername, "");
+        Nutzer currNutzer = gson.fromJson(json, Nutzer.class);
+
+        return currNutzer;
     }
 
 

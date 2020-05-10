@@ -9,14 +9,18 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.StrictMode;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.github.ybq.android.spinkit.sprite.Sprite;
 import com.github.ybq.android.spinkit.style.FoldingCube;
+import com.preference.PowerPreference;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -30,7 +34,7 @@ public class MainScreenActivity extends AppCompatActivity {
     ArrayList<Nutzer> nutzerliste = new ArrayList<>();
     RecyclerView nutzer_rv;
 
-    static Nutzer currentNutzer;
+    public static Nutzer currentNutzer;
     ProgressBar progressBar;
     JSONObject response;
     ImageView addcontactbtn;
@@ -55,10 +59,10 @@ public class MainScreenActivity extends AppCompatActivity {
 
 
         if(isNetworkAvailable()) {
-            KontaktListeLaden();
+            ChatsEmpfangen nz = new ChatsEmpfangen();
+            nz.execute((Void)null);
         } else {
 
-            currentNutzer.getNutzerOffline(sharedPreferences);
             nutzerliste = currentNutzer.getFreunde();
             nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, MainScreenActivity.this));
             //speichereFreundeOffline();
@@ -96,13 +100,12 @@ public class MainScreenActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if(isNetworkAvailable()) {
-            KontaktListeLaden();
+            ChatsEmpfangen nz = new ChatsEmpfangen();
+            nz.execute((Void)null);
         } else {
 
-            currentNutzer.getNutzerOffline(sharedPreferences);
             nutzerliste = currentNutzer.getFreunde();
             nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, MainScreenActivity.this));
-
 
         }
     }
@@ -156,8 +159,12 @@ public class MainScreenActivity extends AppCompatActivity {
 
                     nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, MainScreenActivity.this));
                     progressBar.setVisibility(View.INVISIBLE);
-                    currentNutzer.setFreunde(nutzerliste);
-                    currentNutzer.saveNutzerOffline(sharedPreferences);
+
+                    currentNutzer.addFreundeInOffline(nutzerliste);
+                    PowerPreference.getFileByName("Offline").putObject("OfflineNutzer", currentNutzer);
+                    currentNutzer = PowerPreference.getFileByName("Offline").getObject("OfflineNutzer", Nutzer.class);
+
+
                 }
             }, 2000);
 
@@ -181,6 +188,91 @@ public class MainScreenActivity extends AppCompatActivity {
             System.out.println(nutzerliste.get(i).getNutzername());
         }
 
+    }
+
+
+
+    public class ChatsEmpfangen extends AsyncTask<Void,Void,Boolean> {
+
+        String nachrichtText;
+        JSONObject response = new JSONObject();
+
+
+
+        public ChatsEmpfangen(){
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+            StrictMode.setThreadPolicy(policy);
+
+            try{
+
+
+                    response = MainScreenActivity.currentNutzer.getListeDerFreunde();
+                    currentNutzer.addFreundeInOffline(nutzerliste);
+                    PowerPreference.getFileByName("Offline").putObject("OfflineNutzer", currentNutzer);
+                    currentNutzer = PowerPreference.getFileByName("Offline").getObject("OfflineNutzer", Nutzer.class);
+
+
+            }
+
+            catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            int msgType = 0;
+
+            try {
+
+                    msgType = response.getInt("MsgType");
+
+
+                    if (msgType == 1) {
+
+                        JSONArray list = new JSONArray();
+                        try {
+                            list = (JSONArray) response.get("Data");
+                        } catch (JSONException e) {
+                            e.printStackTrace();
+                        }
+
+                        if (list.length() != 0) {
+
+                            nutzerliste = (formJSONARRAYtoNormalArray(list));
+                            runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+
+                                    nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, MainScreenActivity.this));
+                                }
+                            });
+
+
+                        }
+                    } else {
+
+                    }
+
+
+
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+        }
     }
 
 }

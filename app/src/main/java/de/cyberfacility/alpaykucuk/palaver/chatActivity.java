@@ -23,6 +23,7 @@ import android.widget.Toast;
 import com.github.ybq.android.spinkit.sprite.Sprite;
 import com.github.ybq.android.spinkit.style.FoldingCube;
 import com.google.firebase.FirebaseApp;
+import com.preference.PowerPreference;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -134,12 +135,9 @@ public class chatActivity extends AppCompatActivity{
             pullMessages();
         } else {
 
-            System.out.println("Freunde: " + MainScreenActivity.currentNutzer.getFreunde().size());
-            MainScreenActivity.currentNutzer.getNutzerOffline(sharedPreferences);
             messages = MainScreenActivity.currentNutzer.searchFreundInListe(currentEmpfänger.getNutzername()).getMessages();
 
             messageAdapter.updateList(messages);
-            System.out.println("Messages größe: " + messages.size());
             message_rv.scrollToPosition(messages.size() - 1);
 
         }
@@ -378,7 +376,7 @@ public class chatActivity extends AppCompatActivity{
                                     messageAdapter.updateList(messages);
                                     message_rv.scrollToPosition(messages.size() - 1);
                                     MainScreenActivity.currentNutzer.searchFreundInListe(currentEmpfänger.getNutzername()).setMessages(messages);
-                                    MainScreenActivity.currentNutzer.saveNutzerOffline(sharedPreferences);
+                                    PowerPreference.getFileByName("Offline").putObject("OfflineNutzer", MainScreenActivity.currentNutzer);
                                 }
                             });
 

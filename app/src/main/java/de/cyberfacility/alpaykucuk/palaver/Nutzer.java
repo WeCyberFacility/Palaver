@@ -110,6 +110,25 @@ public class Nutzer {
     }
 
 
+    public void addFreundeInOffline(ArrayList<Nutzer> onlinelist) {
+
+        for (Nutzer cu : onlinelist) {
+            if (!istOfflineVorhanden(cu)) {
+                addFreund(cu);
+            }
+        }
+
+    }
+
+    public boolean istOfflineVorhanden(Nutzer cu) {
+        for (Nutzer cui : getFreunde()) {
+            if (cui.getNutzername().equals(cu.getNutzername())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 
     //API Abfragen:
 

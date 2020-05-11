@@ -16,6 +16,9 @@ public class FireBase extends FirebaseMessagingService {
 
     @Override
     public void onMessageReceived(RemoteMessage remoteMessage) {
+
+
+
       Log.d("Push",remoteMessage.getData().toString());
       createNotificationChannel();
 

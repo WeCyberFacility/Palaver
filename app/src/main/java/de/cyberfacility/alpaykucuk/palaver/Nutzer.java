@@ -194,13 +194,13 @@ public class Nutzer {
         return APIRequestHandler.DatenÜbermitteln("http://palaver.se.paluno.uni-due.de/api/message/getoffset", json);
     }
 
-    public JSONObject nachrichtSenden(String empfängerNutzername, String nachricht) throws Exception {
+    public JSONObject nachrichtSenden(String empfängerNutzername, String mimetype, String nachricht) throws Exception {
         JSONObject json = new JSONObject();
         try {
             json.put("Username", getNutzername());
             json.put("Password", getPasswort());
             json.put("Recipient", empfängerNutzername);
-            json.put("Mimetype", "text/plain");
+            json.put("Mimetype", mimetype);
             json.put("Data", nachricht);
         } catch (JSONException e) {
             e.printStackTrace();
@@ -213,6 +213,9 @@ public class Nutzer {
 
         JSONObject json = new JSONObject();
         String token = FirebaseInstanceId.getInstance().getToken();
+
+
+        System.out.println("TOKEN: " + token);
 
         try {
             json.put("Username", benutzernameText);

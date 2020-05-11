@@ -39,15 +39,32 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
     @Override
     public void onBindViewHolder(@NonNull MessageHolder holder, int position) {
 
+        holder.setIsRecyclable(false);
+
         if(data.get(position).getSender().equals(MainScreenActivity.currentNutzer.getNutzername())) {
             holder.messagelayout.setBackgroundResource(R.drawable.senderlay);
             holder.messagetxt.setTextColor(Color.WHITE);
+            holder.gpslogo.setBackgroundResource(R.drawable.gpslight);
+
+            if (data.get(position) instanceof GPSMessage) {
+                holder.messagetxt.setText(data.get(position).getSender() + "s " + "jetziger Standort");
+            } else {
+                holder.gpslogo.setVisibility(View.INVISIBLE);
+                holder.messagetxt.setText(data.get(position).getData());
+            }
         } else {
             holder.messagelayout.setBackgroundResource(R.drawable.empfaengerlay);
             holder.messagetxt.setTextColor(Color.BLACK);
+            holder.gpslogo.setBackgroundResource(R.drawable.gpsbtn);
+
+            if (data.get(position) instanceof GPSMessage) {
+                holder.messagetxt.setText(data.get(position).getEmpfänger() + "s " + "jetziger Standort");
+            } else {
+                holder.gpslogo.setVisibility(View.INVISIBLE);
+                holder.messagetxt.setText(data.get(position).getData());
+            }
         }
 
-        holder.messagetxt.setText(data.get(position).getData());
     }
 
     @Override
@@ -72,12 +89,14 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
 
         ConstraintLayout messagelayout;
         TextView messagetxt;
+        ImageView gpslogo;
 
         public MessageHolder(@NonNull View itemView) {
             super(itemView);
 
             messagelayout = itemView.findViewById(R.id.messagelayout);
             messagetxt = itemView.findViewById(R.id.messagetxt);
+            gpslogo = itemView.findViewById(R.id.gpslogo);
         }
     }
 

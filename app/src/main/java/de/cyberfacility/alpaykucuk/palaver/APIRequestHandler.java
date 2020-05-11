@@ -83,6 +83,8 @@ import org.json.JSONObject;
             return DatenÜbermitteln("http://palaver.se.paluno.uni-due.de/api/user/pushtoken",messageBody);
 
         }
+
+
         public static JSONObject pwneu (String username, String password, String newPassword) throws Exception{
             //Neues JSON Objekt erstellen mit den gewünschten Daten, um diese zu übermitteln
             JSONObject json = new JSONObject();

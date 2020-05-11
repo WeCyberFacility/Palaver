@@ -5,10 +5,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.location.Location;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
@@ -31,6 +34,8 @@ import org.json.JSONObject;
 
 import java.util.ArrayList;
 
+import javax.crypto.spec.OAEPParameterSpec;
+
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class chatActivity extends AppCompatActivity{
@@ -40,6 +45,7 @@ public class chatActivity extends AppCompatActivity{
     ImageView sendenbtn;
     RecyclerView message_rv;
     EditText chatsendentxt;
+    ImageView gpsbtn;
 
     ProgressBar progressBar;
 
@@ -85,6 +91,7 @@ public class chatActivity extends AppCompatActivity{
         sendenbtn = findViewById(R.id.sendenbtn);
         message_rv = findViewById(R.id.messagesrv);
         chatsendentxt = findViewById(R.id.chatsendentxt);
+        gpsbtn = findViewById(R.id.gpsbtn);
 
         progressBar = (ProgressBar)findViewById(R.id.loadingspinnermessages);
         Sprite foldingCube = new FoldingCube();
@@ -105,6 +112,19 @@ public class chatActivity extends AppCompatActivity{
 
         }
 
+        gpsbtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+
+                if (!isNetworkAvailable()) {
+
+                } else {
+
+                    gpsNachrichtSenden();
+                }
+
+            }
+        });
 
         sendenbtn.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -194,7 +214,8 @@ public class chatActivity extends AppCompatActivity{
 
     public void nachrichtSenden() {
 
-        nachrichtSenden nS = new nachrichtSenden(chatsendentxt.getText().toString());
+        String opCodeMerge = OpCodesMessages.TEXT.ordinal() + chatsendentxt.getText().toString();
+        nachrichtSenden nS = new nachrichtSenden("text/plain", opCodeMerge);
         nS.execute((Void)null);
         chatsendentxt.setText("");
 
@@ -232,13 +253,25 @@ public class chatActivity extends AppCompatActivity{
         for(int i=0;i < jsonArray.length();i++){
             try {
                 JSONObject currentJSONObjekt = jsonArray.getJSONObject(i);
-                Message newMessage = new Message(
-                        currentJSONObjekt.get("Sender").toString(),
-                        currentJSONObjekt.get("Recipient").toString(),
-                        currentJSONObjekt.get("Mimetype").toString(),
-                        currentJSONObjekt.get("Data").toString(),
-                        currentJSONObjekt.get("DateTime").toString());
-                arrayList.add(newMessage);
+                if (String.valueOf(currentJSONObjekt.get("Data").toString().charAt(0)).equals(String.valueOf(OpCodesMessages.GEO.ordinal()))) {
+                    GPSMessage newMessage = new GPSMessage(
+                            currentJSONObjekt.get("Sender").toString(),
+                            currentJSONObjekt.get("Recipient").toString(),
+                            currentJSONObjekt.get("Mimetype").toString(),
+                            currentJSONObjekt.get("Data").toString().substring(1),
+                            currentJSONObjekt.get("DateTime").toString());
+                    arrayList.add(newMessage);
+                } else {
+                    Message newMessage = new Message(
+                            currentJSONObjekt.get("Sender").toString(),
+                            currentJSONObjekt.get("Recipient").toString(),
+                            currentJSONObjekt.get("Mimetype").toString(),
+                            currentJSONObjekt.get("Data").toString().substring(1),
+                            currentJSONObjekt.get("DateTime").toString());
+                    arrayList.add(newMessage);
+                }
+
+                //TODO: FALLS PIC NEUES ELSE-IF
             } catch (JSONException e) {
                 e.printStackTrace();
             }
@@ -250,12 +283,14 @@ public class chatActivity extends AppCompatActivity{
     public class nachrichtSenden extends AsyncTask<Void,Void,Boolean> {
 
         String nachrichtText;
+        String mimetype;
         JSONObject response = new JSONObject();
 
 
 
-        public nachrichtSenden(String nachrichtEditText1){
+        public nachrichtSenden(String newmimetype, String nachrichtEditText1){
             nachrichtText=nachrichtEditText1;
+            mimetype = newmimetype;
         }
 
         @Override
@@ -273,7 +308,7 @@ public class chatActivity extends AppCompatActivity{
 
             try{
 
-                response = MainScreenActivity.currentNutzer.nachrichtSenden(currentEmpfänger.getNutzername(), nachrichtText);
+                response = MainScreenActivity.currentNutzer.nachrichtSenden(currentEmpfänger.getNutzername(), mimetype, nachrichtText);
 
             }
 
@@ -480,6 +515,26 @@ public class chatActivity extends AppCompatActivity{
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
 
+
+    public void gpsNachrichtSenden() {
+        GPS gps = new GPS(getApplicationContext());
+        Location l = gps.getLocation();
+        if (l == null) {
+            Toast.makeText(getApplicationContext(), "GPS Fehler", Toast.LENGTH_SHORT).show();
+        } else {
+            double lat = l.getLatitude();
+            double lon = l.getLongitude();
+            Uri intentUri = Uri.parse("geo:" + lat + "," + lon);
+            Intent mapIntent = new Intent(Intent.ACTION_VIEW, intentUri);
+            mapIntent.setPackage("com.google.android.apps.maps");
+
+            String opCodeMerge = OpCodesMessages.GEO.ordinal() + intentUri.toString();
+            nachrichtSenden nS = new nachrichtSenden("text/plain", opCodeMerge);
+            nS.execute((Void) null);
+            refreshList();
+
+        }
+    }
 
 
     public class Tokenmoken extends AsyncTask<Void, Void, Boolean> {

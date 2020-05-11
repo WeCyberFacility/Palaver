@@ -44,12 +44,12 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
         holder.setIsRecyclable(false);
 
         if(data.get(position).getSender().equals(MainScreenActivity.currentNutzer.getNutzername())) {
-            holder.messagelayout.setBackgroundResource(R.drawable.senderlay);
+
             holder.messagetxt.setTextColor(Color.WHITE);
             holder.gpslogo.setBackgroundResource(R.drawable.gpslight);
 
         } else {
-            holder.messagelayout.setBackgroundResource(R.drawable.empfaengerlay);
+
             holder.messagetxt.setTextColor(Color.BLACK);
             holder.gpslogo.setBackgroundResource(R.drawable.gpsbtn);
 
@@ -57,9 +57,20 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
 
         if (data.get(position) instanceof GPSMessage) {
             holder.gpslogo.setVisibility(View.VISIBLE);
-            holder.messagetxt.setText(data.get(position).getSender() + "s " + "jetziger Standort");
+            if (data.get(position).getSender().equals(MainScreenActivity.currentNutzer.getNutzername())) {
+                holder.messagelayout.setBackgroundResource(R.drawable.geobl);
+                holder.messagetxt.setText("Dein " + "jetziger Standort");
+            } else {
+                holder.messagelayout.setBackgroundResource(R.drawable.geowh);
+                holder.messagetxt.setText(data.get(position).getSender() + "s " + "jetziger Standort");
+            }
         } else {
             holder.gpslogo.setVisibility(View.INVISIBLE);
+            if (data.get(position).getSender().equals(MainScreenActivity.currentNutzer.getNutzername())) {
+                holder.messagelayout.setBackgroundResource(R.drawable.senderlay);
+            } else {
+                holder.messagelayout.setBackgroundResource(R.drawable.empfaengerlay);
+            }
             holder.messagetxt.setText(data.get(position).getData());
         }
 
@@ -70,6 +81,7 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
                 if (data.get(position) instanceof GPSMessage) {
                     GPSMessage currGPSMess = (GPSMessage) data.get(position);
                     Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com/maps/place/" + currGPSMess.breitengrad + "," + currGPSMess.längengrad));
+                    browserIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                     context.startActivity(browserIntent);
                 } else {
                 }

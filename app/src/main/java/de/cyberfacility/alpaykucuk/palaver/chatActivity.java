@@ -64,6 +64,10 @@ public class chatActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("de.cyberfacility.alpaykucuk.palaver");
+        filter.addCategory("de.uni_due.paluno.se.palaver");
+        registerReceiver(notificationReciever, filter);
     }
 
     @Override
@@ -117,6 +121,10 @@ public class chatActivity extends AppCompatActivity{
             public void onClick(View view) {
 
                 if (!isNetworkAvailable()) {
+                    new SweetAlertDialog(chatActivity.this, SweetAlertDialog.ERROR_TYPE)
+                            .setTitleText("Oops...")
+                            .setContentText("Etwas ist schiefgelaufen!")
+                            .show();
 
                 } else {
 
@@ -134,10 +142,10 @@ public class chatActivity extends AppCompatActivity{
 
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(chatsendentxt.getWindowToken(), 0);
-                if(chatsendentxt.getText().toString().equals("")) {
+                if(chatsendentxt.getText().toString().equals("") || !isNetworkAvailable()) {
                     new SweetAlertDialog(chatActivity.this, SweetAlertDialog.ERROR_TYPE)
                             .setTitleText("Oops...")
-                            .setContentText("Bitte fülle alle Felder aus!")
+                            .setContentText("Etwas ist schiefgelaufen!")
                             .show();
 
                     chatsendentxt.setText("");
@@ -260,6 +268,7 @@ public class chatActivity extends AppCompatActivity{
                             currentJSONObjekt.get("Mimetype").toString(),
                             currentJSONObjekt.get("Data").toString().substring(1),
                             currentJSONObjekt.get("DateTime").toString());
+                    newMessage.generateLängenUndBreitenGrad();
                     arrayList.add(newMessage);
                 } else {
                     Message newMessage = new Message(

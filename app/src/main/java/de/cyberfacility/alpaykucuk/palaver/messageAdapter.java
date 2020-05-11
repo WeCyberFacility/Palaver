@@ -1,8 +1,10 @@
 package de.cyberfacility.alpaykucuk.palaver;
 
 import android.content.Context;
+import android.content.Intent;
 import android.graphics.Color;
 import android.graphics.drawable.DrawableWrapper;
+import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -37,7 +39,7 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
     }
 
     @Override
-    public void onBindViewHolder(@NonNull MessageHolder holder, int position) {
+    public void onBindViewHolder(@NonNull MessageHolder holder, final int position) {
 
         holder.setIsRecyclable(false);
 
@@ -46,24 +48,33 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
             holder.messagetxt.setTextColor(Color.WHITE);
             holder.gpslogo.setBackgroundResource(R.drawable.gpslight);
 
-            if (data.get(position) instanceof GPSMessage) {
-                holder.messagetxt.setText(data.get(position).getSender() + "s " + "jetziger Standort");
-            } else {
-                holder.gpslogo.setVisibility(View.INVISIBLE);
-                holder.messagetxt.setText(data.get(position).getData());
-            }
         } else {
             holder.messagelayout.setBackgroundResource(R.drawable.empfaengerlay);
             holder.messagetxt.setTextColor(Color.BLACK);
             holder.gpslogo.setBackgroundResource(R.drawable.gpsbtn);
 
-            if (data.get(position) instanceof GPSMessage) {
-                holder.messagetxt.setText(data.get(position).getEmpfänger() + "s " + "jetziger Standort");
-            } else {
-                holder.gpslogo.setVisibility(View.INVISIBLE);
-                holder.messagetxt.setText(data.get(position).getData());
-            }
         }
+
+        if (data.get(position) instanceof GPSMessage) {
+            holder.gpslogo.setVisibility(View.VISIBLE);
+            holder.messagetxt.setText(data.get(position).getSender() + "s " + "jetziger Standort");
+        } else {
+            holder.gpslogo.setVisibility(View.INVISIBLE);
+            holder.messagetxt.setText(data.get(position).getData());
+        }
+
+
+        holder.messagetxt.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                if (data.get(position) instanceof GPSMessage) {
+                    GPSMessage currGPSMess = (GPSMessage) data.get(position);
+                    Intent browserIntent = new Intent(Intent.ACTION_VIEW, Uri.parse("http://www.google.com/maps/place/" + currGPSMess.breitengrad + "," + currGPSMess.längengrad));
+                    context.startActivity(browserIntent);
+                } else {
+                }
+            }
+        });
 
     }
 

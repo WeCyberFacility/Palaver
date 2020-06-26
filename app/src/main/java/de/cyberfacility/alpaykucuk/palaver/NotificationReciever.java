@@ -14,6 +14,7 @@ public class NotificationReciever extends BroadcastReceiver {
 
 
         currChatActivity.refreshList();
+        Toast.makeText(context, "Notification Clicked!", Toast.LENGTH_SHORT).show();
     }
 }
 

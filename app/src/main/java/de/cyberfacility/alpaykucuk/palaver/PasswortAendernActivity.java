@@ -14,14 +14,20 @@ import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.github.ybq.android.spinkit.sprite.Sprite;
 import com.github.ybq.android.spinkit.style.FoldingCube;
+import com.google.firebase.iid.FirebaseInstanceId;
 
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.IOException;
+
 import cn.pedant.SweetAlert.SweetAlertDialog;
+
+import static com.google.firebase.messaging.FirebaseMessaging.INSTANCE_ID_SCOPE;
 
 public class PasswortAendernActivity extends AppCompatActivity {
     EditText new_pw;
@@ -56,6 +62,27 @@ public class PasswortAendernActivity extends AppCompatActivity {
             public void onClick(View view) {
 
                 logout_save();
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            FirebaseInstanceId.getInstance().deleteToken(FirebaseInstanceId.getInstance().getToken(), INSTANCE_ID_SCOPE);
+                            FirebaseInstanceId.getInstance().deleteInstanceId();
+                            System.out.println("Token delete hat funktioniert!");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            System.out.println("Token delete hat nicht funktioniert!");
+                        }
+                    }
+                }).start();
+                /*try {
+                    FirebaseInstanceId.getInstance().deleteInstanceId();
+                    Toast.makeText(PasswortAendernActivity.this, "Instance Id wurde gelöscht!", Toast.LENGTH_SHORT).show();
+                    System.out.println("InstanceID delete hat funktioniert!");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                    System.out.println("InstanceID delete hat nicht funktioniert!");
+                }*/
                 Intent myIntent = new Intent(getApplicationContext(), LoginActivity.class);
                 myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(myIntent);

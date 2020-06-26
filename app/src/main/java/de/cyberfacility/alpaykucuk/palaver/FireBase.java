@@ -19,18 +19,32 @@ public class FireBase extends FirebaseMessagingService {
     public void onMessageReceived(RemoteMessage remoteMessage) {
 
 
+        System.out.println("Sender: " + remoteMessage.getData().get("sender"));
+        System.out.println("Preview: " + remoteMessage.getData().get("preview"));
+        System.out.println("Text: " + remoteMessage.getData().get("text"));
 
       Log.d("Push",remoteMessage.getData().toString());
       createNotificationChannel();
 
+        int requestID = (int) System.currentTimeMillis();
+        Intent notificationIntent = new Intent(getApplicationContext(), MainActivity.class);
+        chatActivity.currentEmpfänger = findEmpfängerInList(remoteMessage.getData().get("sender"));
+
+        Intent notificationIntentChat = new Intent(getApplicationContext(), chatActivity.class);
+        PendingIntent contentIntent = PendingIntent.getActivity(this, requestID,notificationIntentChat, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Action action = new NotificationCompat.Action.Builder(R.drawable.common_google_signin_btn_icon_dark, "Previous", contentIntent).build();
         NotificationCompat.Builder notificationBuilder=
                 new NotificationCompat.Builder(this,"id")
                         //TODO: preview um eine nach rechts verschieben!!!
-                .setContentTitle(remoteMessage.getData().get("sender")+" "+remoteMessage.getData().get("preview"))
-                .setContentText(remoteMessage.getData().get("text"))
+                //.setContentTitle(remoteMessage.getData().get("sender")+" "+remoteMessage.getData().get("preview"))
+                //.setContentText(remoteMessage.getData().get("text"))
+                        .setContentText(remoteMessage.getData().get("preview").substring(1))
+                        .setContentTitle(remoteMessage.getData().get("sender"))
                 .setSmallIcon(R.mipmap.launcherlogo)
                 .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .setAutoCancel(true);
+                .setAutoCancel(true)
+                .setContentIntent(contentIntent);
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(67, notificationBuilder.build());
 
@@ -69,6 +83,14 @@ public class FireBase extends FirebaseMessagingService {
 
     }
 
+
+    public Nutzer findEmpfängerInList(String sender) {
+
+        Nutzer senderNutzer = MainScreenActivity.currentNutzer.searchFreundInListe(sender);
+
+        return senderNutzer;
+
+    }
 
 
 

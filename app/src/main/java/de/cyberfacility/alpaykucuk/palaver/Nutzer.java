@@ -214,7 +214,6 @@ public class Nutzer {
         JSONObject json = new JSONObject();
         String token = FirebaseInstanceId.getInstance().getToken();
 
-
         System.out.println("TOKEN: " + token);
 
         try {

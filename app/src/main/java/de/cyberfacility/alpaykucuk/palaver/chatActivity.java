@@ -110,11 +110,11 @@ public class chatActivity extends AppCompatActivity{
         message_rv.setAdapter(messageAdapter);
 
 
-        if (isNetworkAvailable()) {
+        /*if (isNetworkAvailable()) {
             TokenAktualisieren();
         } else {
 
-        }
+        }*/
 
         gpsbtn.setOnClickListener(new View.OnClickListener() {
             @Override

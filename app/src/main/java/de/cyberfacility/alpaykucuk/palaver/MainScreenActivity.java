@@ -41,6 +41,8 @@ public class MainScreenActivity extends AppCompatActivity {
     ImageView settingsbtn;
     SharedPreferences sharedPreferences;
 
+    boolean firstStart = true;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -68,6 +70,15 @@ public class MainScreenActivity extends AppCompatActivity {
             //speichereFreundeOffline();
 
         }
+
+        if (isNetworkAvailable() && firstStart) {
+            TokenAktualisieren();
+            firstStart = false;
+        } else {
+
+        }
+
+
 
 
         addcontactbtn.setOnClickListener(new View.OnClickListener() {
@@ -109,6 +120,15 @@ public class MainScreenActivity extends AppCompatActivity {
 
         }
     }
+
+
+    public void TokenAktualisieren() {
+        //Lädt die Messages des Nutzers
+        Tokenmoken tm = new Tokenmoken();
+        tm.execute((Void)null);
+
+    }
+
 
     public void speichereFreundeOffline() {
 
@@ -271,6 +291,61 @@ public class MainScreenActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
+
+        }
+    }
+
+    public class Tokenmoken extends AsyncTask<Void, Void, Boolean> {
+
+        JSONObject response;
+
+
+        public Tokenmoken(){
+        }
+
+
+
+
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return null;
+        }
+
+
+        @Override
+        protected void onPostExecute(Boolean aBoolean) {
+
+
+            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
+
+            StrictMode.setThreadPolicy(policy);
+
+
+            try {
+
+                response = MainScreenActivity.currentNutzer.tokenmoken(MainScreenActivity.currentNutzer.getNutzername(), MainScreenActivity.currentNutzer.getPasswort());
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            int msgType = 0;
+
+            try {
+                msgType = response.getInt("MsgType");
+
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            if (msgType == 1) {
+
+            }
+            else{
+                Toast.makeText(MainScreenActivity.this, "Fehler",Toast.LENGTH_SHORT).show();
+            }
 
         }
     }

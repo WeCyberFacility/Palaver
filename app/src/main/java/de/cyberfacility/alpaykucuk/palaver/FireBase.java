@@ -2,6 +2,7 @@ package de.cyberfacility.alpaykucuk.palaver;
 
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Build;
@@ -24,12 +25,14 @@ public class FireBase extends FirebaseMessagingService {
 
         NotificationCompat.Builder notificationBuilder=
                 new NotificationCompat.Builder(this,"id")
+                        //TODO: preview um eine nach rechts verschieben!!!
                 .setContentTitle(remoteMessage.getData().get("sender")+" "+remoteMessage.getData().get("preview"))
                 .setContentText(remoteMessage.getData().get("text"))
-                .setSmallIcon(R.drawable.common_google_signin_btn_icon_dark)
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT);
+                .setSmallIcon(R.mipmap.launcherlogo)
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setAutoCancel(true);
         NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        notificationManager.notify(0, notificationBuilder.build());
+        notificationManager.notify(67, notificationBuilder.build());
 
         versendeBroadcast();
 

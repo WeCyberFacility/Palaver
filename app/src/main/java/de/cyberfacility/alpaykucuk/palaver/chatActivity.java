@@ -64,7 +64,7 @@ public class chatActivity extends AppCompatActivity{
     @Override
     protected void onResume() {
         super.onResume();
-        IntentFilter filter = new IntentFilter();
+        IntentFilter filter = new IntentFilter("com.google.android.c2dm.intent.RECEIVE");
         filter.addAction("de.cyberfacility.alpaykucuk.palaver");
         filter.addCategory("de.uni_due.paluno.se.palaver");
         registerReceiver(notificationReciever, filter);

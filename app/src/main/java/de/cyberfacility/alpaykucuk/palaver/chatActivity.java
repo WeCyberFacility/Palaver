@@ -15,6 +15,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.StrictMode;
+import android.util.Log;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -152,12 +153,10 @@ public class chatActivity extends AppCompatActivity{
         if (istMitInternetVerbunden()) {
             pullMessages();
         } else {
-
-            messages = MainScreenActivity.currentNutzer.searchFreundInListe(currentEmpfänger.getNutzername()).getMessages();
-
-            messageAdapter.updateList(messages);
-            message_rv.scrollToPosition(messages.size() - 1);
-
+            ArrayList<Message> newMessagePull = MainScreenActivity.currentNutzer.searchFreundInListe(currentEmpfänger.getNutzername().toLowerCase()).getMessages();
+            Log.i("MessageSize", String.valueOf(newMessagePull.size()));
+                messageAdapter.updateList(newMessagePull);
+                message_rv.scrollToPosition(messages.size() - 1);
         }
 
 
@@ -174,7 +173,7 @@ public class chatActivity extends AppCompatActivity{
             @Override
             public void run() {
 
-
+                Log.i("Refresh","Refreshing List");
                 MessagesAbZeitpunktLaden();
 
 

@@ -4,6 +4,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
 import android.net.Uri;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -40,7 +41,9 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
 
         holder.setIsRecyclable(false);
 
-        if(data.get(position).getSender().equals(MainScreenActivity.currentNutzer.getNutzername())) {
+
+
+        if(data.get(position).getSender().toLowerCase().equals(MainScreenActivity.currentNutzer.getNutzername().toLowerCase())) {
 
             holder.messagetxt.setTextColor(Color.WHITE);
             holder.gpslogo.setBackgroundResource(R.drawable.gpslight);
@@ -54,7 +57,7 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
 
         if (data.get(position) instanceof GPSMessage) {
             holder.gpslogo.setVisibility(View.VISIBLE);
-            if (data.get(position).getSender().equals(MainScreenActivity.currentNutzer.getNutzername())) {
+            if (data.get(position).getSender().toLowerCase().equals(MainScreenActivity.currentNutzer.getNutzername().toLowerCase())) {
                 holder.messagelayout.setBackgroundResource(R.drawable.geobl);
                 holder.messagetxt.setText("Dein " + "jetziger Standort");
             } else {
@@ -63,9 +66,12 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
             }
         } else {
             holder.gpslogo.setVisibility(View.INVISIBLE);
-            if (data.get(position).getSender().equals(MainScreenActivity.currentNutzer.getNutzername())) {
+            boolean SenderIstEingeloggterNutzer = data.get(position).getSender().toLowerCase().equals(MainScreenActivity.currentNutzer.getNutzername().toLowerCase());
+            if (SenderIstEingeloggterNutzer) {
+
                 holder.messagelayout.setBackgroundResource(R.drawable.senderlay);
             } else {
+
                 holder.messagelayout.setBackgroundResource(R.drawable.empfaengerlay);
             }
             holder.messagetxt.setText(data.get(position).getData());

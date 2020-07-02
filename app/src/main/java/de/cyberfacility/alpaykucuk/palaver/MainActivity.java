@@ -7,11 +7,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.preference.PowerPreference;
-
-import java.lang.reflect.Type;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -27,9 +23,6 @@ public class MainActivity extends AppCompatActivity {
         checkLoggedIn();
 
     }
-
-    //TODO: Speichere eine eingeloggte Person in den Shared Prefences
-
 
     public void checkLoggedIn() {
 
@@ -53,10 +46,6 @@ public class MainActivity extends AppCompatActivity {
 
 
     public void getLoggedNutzer() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-        String nutzername = preferences.getString("Nutzername", "");
-        String passwort = preferences.getString("Passwort", "");
-
         Nutzer offlineNutzer = PowerPreference.getFileByName("Offline").getObject("OfflineNutzer", Nutzer.class);
         MainScreenActivity.currentNutzer = offlineNutzer;
         System.out.println("Beweis: " + offlineNutzer.getNutzername());

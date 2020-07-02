@@ -3,7 +3,6 @@ package de.cyberfacility.alpaykucuk.palaver;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Color;
-import android.graphics.drawable.DrawableWrapper;
 import android.net.Uri;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,8 +13,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
-
-import com.bumptech.glide.Glide;
 
 import java.util.ArrayList;
 
@@ -98,12 +95,7 @@ public class messageAdapter extends RecyclerView.Adapter<messageAdapter.MessageH
 
     public void updateList(ArrayList<Message> itemList){
         data.clear();
-//        this.list = itemList;
-//        list.addAll(itemList);
-//        notifyItemInserted(list.size());
-//        notifyDataSetChanged();
         this.data.addAll(itemList);
-//        notifyItemInserted(list.size());
         notifyDataSetChanged();
     }
 

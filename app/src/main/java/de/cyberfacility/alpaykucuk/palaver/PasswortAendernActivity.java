@@ -10,11 +10,11 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
+import android.util.Log;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
-import android.widget.Toast;
 
 import com.github.ybq.android.spinkit.sprite.Sprite;
 import com.github.ybq.android.spinkit.style.FoldingCube;
@@ -40,9 +40,6 @@ public class PasswortAendernActivity extends AppCompatActivity {
 
     SweetAlertDialog dialog;
     SharedPreferences sharedPreferences;
-
-
-    //TODO: currentNutzer's Passwort aktualisieren, Dialog anpassen, Edittexte anpassen
 
 
     @Override
@@ -75,14 +72,6 @@ public class PasswortAendernActivity extends AppCompatActivity {
                         }
                     }
                 }).start();
-                /*try {
-                    FirebaseInstanceId.getInstance().deleteInstanceId();
-                    Toast.makeText(PasswortAendernActivity.this, "Instance Id wurde gelöscht!", Toast.LENGTH_SHORT).show();
-                    System.out.println("InstanceID delete hat funktioniert!");
-                } catch (IOException e) {
-                    e.printStackTrace();
-                    System.out.println("InstanceID delete hat nicht funktioniert!");
-                }*/
                 Intent myIntent = new Intent(getApplicationContext(), LoginActivity.class);
                 myIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(myIntent);
@@ -107,15 +96,15 @@ public class PasswortAendernActivity extends AppCompatActivity {
         progressBar.setVisibility(View.INVISIBLE);
     }
 
-    private boolean isNetworkAvailable() {
+    private boolean istMitInternetVerbunden() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        NetworkInfo netzwerkInfo = connectivityManager.getActiveNetworkInfo();
+        return netzwerkInfo != null && netzwerkInfo.isConnected();
     }
 
     public void pwcheck1(){
         progressBar.setVisibility(View.VISIBLE);
-        if(new_pw.getText().toString().equals("") || new_pw_wdh.getText().toString().equals("") || !isNetworkAvailable()){
+        if(new_pw.getText().toString().equals("") || new_pw_wdh.getText().toString().equals("") || !istMitInternetVerbunden()){
             FehlerAnzeigen("Es ist ein Fehler aufgetreten!");
             progressBar.setVisibility(View.INVISIBLE);
         }else {
@@ -140,7 +129,7 @@ public class PasswortAendernActivity extends AppCompatActivity {
             @Override
             public void run() {
                 try  {
-                    response = APIRequestHandler.pwneu(MainScreenActivity.currentNutzer.getNutzername(),MainScreenActivity.currentNutzer.getPasswort(), new_pw_wdh.getText().toString());
+                    response = APIRequestHandler.neuesPasswordSetzen(MainScreenActivity.currentNutzer.getNutzername(),MainScreenActivity.currentNutzer.getPasswort(), new_pw_wdh.getText().toString());
 
 
                 } catch (Exception e) {
@@ -186,8 +175,13 @@ public class PasswortAendernActivity extends AppCompatActivity {
 
     public void checkResponse(String response) {
 
+        Log.i("Passwort Response", response);
+
         switch (response) {
-            case "Benutzer erfolgreich angelegt":
+            case "Passwort erfolgreich aktualisiert":
+                MainScreenActivity.currentNutzer.setPasswort(new_pw_wdh.getText().toString());
+                new_pw.setText("");
+                new_pw_wdh.setText("");
                 final Handler handler = new Handler();
                 handler.postDelayed(new Runnable() {
                     @Override
@@ -197,7 +191,7 @@ public class PasswortAendernActivity extends AppCompatActivity {
                     }
                 }, 2000);
 
-                ErfolgAnzeigen("Password änderung erfolgreich!");
+                ErfolgAnzeigen("Password Änderung erfolgreich!");
                 break;
             default:
                 FehlerAnzeigen(response);

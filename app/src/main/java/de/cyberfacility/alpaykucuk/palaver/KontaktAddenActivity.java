@@ -3,7 +3,6 @@ package de.cyberfacility.alpaykucuk.palaver;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
@@ -50,24 +49,24 @@ public class KontaktAddenActivity extends AppCompatActivity {
         addcontact.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                addContact();
+                neuenKontaktHinzufuegen();
             }
         });
 
     }
 
-    private boolean isNetworkAvailable() {
+    private boolean istMitInternetVerbunden() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        NetworkInfo netzwerkInfo = connectivityManager.getActiveNetworkInfo();
+        return netzwerkInfo != null && netzwerkInfo.isConnected();
     }
 
-    public void addContact(){
+    public void neuenKontaktHinzufuegen(){
         InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
         imm.hideSoftInputFromWindow(newcontacttxt.getWindowToken(), 0);
 
         progressBar.setVisibility(View.VISIBLE);
-        if (newcontacttxt.getText().toString().equals("") || !isNetworkAvailable()) {
+        if (newcontacttxt.getText().toString().equals("") || !istMitInternetVerbunden()) {
             new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)
                     .setTitleText("Oops...")
                     .setContentText("Etwas ist schief gelaufen!")
@@ -75,8 +74,8 @@ public class KontaktAddenActivity extends AppCompatActivity {
             progressBar.setVisibility(View.INVISIBLE);
         } else {
 
-            final Nutzer newNutzer = new Nutzer(newcontacttxt.getText().toString());
-            kontaktHinzufügen(newNutzer.getNutzername());
+            final Nutzer neuerNutzer = new Nutzer(newcontacttxt.getText().toString());
+            kontaktHinzufügen(neuerNutzer.getNutzername());
 
 
             final Handler handler = new Handler();
@@ -93,7 +92,7 @@ public class KontaktAddenActivity extends AppCompatActivity {
                     }
                     checkResponseFromLogin(responseString);
 
-                    MainScreenActivity.currentNutzer.addFreund(newNutzer);
+                    MainScreenActivity.currentNutzer.addFreund(neuerNutzer);
                     MainScreenActivity.currentNutzer.saveNutzerOffline(sharedPreferences);
 
                     progressBar.setVisibility(View.INVISIBLE);

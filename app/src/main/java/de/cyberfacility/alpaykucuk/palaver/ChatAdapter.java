@@ -12,8 +12,6 @@ import androidx.annotation.NonNull;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.bumptech.glide.Glide;
-
 import java.util.ArrayList;
 
 public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatHolder> {
@@ -38,13 +36,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatHolder> {
     @Override
     public void onBindViewHolder(@NonNull ChatHolder holder, final int position) {
 
-        //Um Profilbilder hinzuzufügen:
-        /*Glide.with(context)
-                .load("https://scontent-cdt1-1.cdninstagram.com/v/t51.2885-15/e35/17077671_1237883376249541_7111054876699787264_n.jpg?_nc_ht=scontent-cdt1-1.cdninstagram.com&_nc_cat=101&_nc_ohc=hYQIffDsixQAX9Hi6UD&oh=91cd583835d562bf62069b1dfc318dd2&oe=5ED93C32")
-                .circleCrop()
-                .into(holder.bild);
-        */
-
         holder.contactname.setText(data.get(position).getNutzername());
 
         holder.contactlayout.setOnClickListener(new View.OnClickListener() {
@@ -52,7 +43,6 @@ public class ChatAdapter extends RecyclerView.Adapter<ChatAdapter.ChatHolder> {
             public void onClick(View view) {
                 chatActivity.currentEmpfänger = data.get(position);
                 chatActivity currentchChatActivity = new chatActivity();
-                //FireBase.currentChatActivity = currentchChatActivity;
                 Intent myIntent = new Intent(context, currentchChatActivity.getClass());
                 context.startActivity(myIntent);
             }

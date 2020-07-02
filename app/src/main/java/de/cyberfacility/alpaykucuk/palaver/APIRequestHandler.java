@@ -45,7 +45,7 @@ import org.json.JSONObject;
     }
 
         public static JSONObject registriereNeuenNutzer(String username, String password) throws Exception{
-            //Neues JSON Objekt erstellen mit den gewünschten Daten, um diese zu übermitteln
+            //Neues JSON Objekt erstellen und diesem den Nutzernamen und das Passwort übermitteln
             JSONObject json = new JSONObject();
             try {
                 json.put("Username", username);
@@ -58,7 +58,7 @@ import org.json.JSONObject;
         }
 
         public static JSONObject checkNutzernameUndPasswordFureLogin(String username, String password) throws Exception{
-            //Neues JSON Objekt erstellen mit den gewünschten Daten, um diese zu übermitteln
+            //Übermittel Nutzername und Password für Login
             JSONObject json = new JSONObject();
             try {
                 json.put("Username", username);
@@ -70,23 +70,8 @@ import org.json.JSONObject;
                     json);
          }
 
-        public static JSONObject TokenSenden(String username, String password, String pushToken ) throws Exception {
-            JSONObject messageBody = new JSONObject();
-            try {
-                messageBody.put("Username", username);
-                messageBody.put("Password", password);
-                messageBody.put("PushToken", pushToken );
-            }
-            catch (JSONException e) {
-                e.printStackTrace();
-            }
-            return DatenÜbermitteln("http://palaver.se.paluno.uni-due.de/api/user/pushtoken",messageBody);
-
-        }
-
-
-        public static JSONObject pwneu (String username, String password, String newPassword) throws Exception{
-            //Neues JSON Objekt erstellen mit den gewünschten Daten, um diese zu übermitteln
+        public static JSONObject neuesPasswordSetzen(String username, String password, String newPassword) throws Exception{
+            //übermiitel Daten zum Ändern des Passwords
             JSONObject json = new JSONObject();
             try {
                 json.put("Username", username);

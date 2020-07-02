@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.view.View;
-import android.view.WindowManager;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
 import android.widget.ImageView;
@@ -20,7 +19,6 @@ import android.widget.TextView;
 
 import com.github.ybq.android.spinkit.sprite.Sprite;
 import com.github.ybq.android.spinkit.style.FoldingCube;
-import com.google.gson.Gson;
 import com.preference.PowerPreference;
 
 import org.json.JSONException;
@@ -124,13 +122,13 @@ public class LoginActivity extends AppCompatActivity {
                 public void run() {
                     while (response == null) {}
 
-                    String responseString = null;
+                    String antwort = null;
                     try {
-                        responseString = response.get("Info").toString().trim();
+                        antwort = response.get("Info").toString().trim();
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    checkResponseFromLogin(responseString);
+                    checkJSONAntwortVonLogin(antwort);
 
                     progressBar.setVisibility(View.INVISIBLE);
                 }
@@ -140,7 +138,7 @@ public class LoginActivity extends AppCompatActivity {
 
     }
 
-    public void checkResponseFromLogin(String response) {
+    public void checkJSONAntwortVonLogin(String response) {
 
         switch (response) {
             case "Benutzer erfolgreich validiert":
@@ -162,17 +160,6 @@ public class LoginActivity extends AppCompatActivity {
 
 
     }
-
-    public Nutzer getNutzerOffline(SharedPreferences sharedPreferences, String nutzername) {
-
-        Gson gson = new Gson();
-        String json = sharedPreferences.getString(nutzername, "");
-        Nutzer currNutzer = gson.fromJson(json, Nutzer.class);
-
-        return currNutzer;
-    }
-
-
 
     public void saveLoggedNutzer(Nutzer currentNutzer) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);

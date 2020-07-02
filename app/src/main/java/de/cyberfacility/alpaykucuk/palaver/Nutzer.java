@@ -145,18 +145,6 @@ public class Nutzer {
     }
 
 
-    public JSONObject NutzerVonFreundeslisteLöschen(String nutzernameFreund) throws Exception{
-        JSONObject json = new JSONObject();
-        try {
-            json.put("Username", getNutzername());
-            json.put("Password", getPasswort());
-            json.put("Friend",   nutzernameFreund);
-        } catch (JSONException e) {
-            e.printStackTrace();
-        }
-        return APIRequestHandler.DatenÜbermitteln("http://palaver.se.paluno.uni-due.de/api/friends/delete", json);
-    }
-
     public JSONObject getListeDerFreunde() throws Exception{
         JSONObject json = new JSONObject();
         try {
@@ -168,7 +156,7 @@ public class Nutzer {
         return APIRequestHandler.DatenÜbermitteln("http://palaver.se.paluno.uni-due.de/api/friends/get", json);
     }
 
-    public JSONObject getChat(String empfängerNutzername) throws Exception{
+    public JSONObject getChatMitEmpfaenger(String empfängerNutzername) throws Exception{
         JSONObject json = new JSONObject();
         try {
             json.put("Username", getNutzername());
@@ -194,7 +182,7 @@ public class Nutzer {
         return APIRequestHandler.DatenÜbermitteln("http://palaver.se.paluno.uni-due.de/api/message/getoffset", json);
     }
 
-    public JSONObject nachrichtSenden(String empfängerNutzername, String mimetype, String nachricht) throws Exception {
+    public JSONObject nachrichtVersenden(String empfängerNutzername, String mimetype, String nachricht) throws Exception {
         JSONObject json = new JSONObject();
         try {
             json.put("Username", getNutzername());
@@ -209,17 +197,17 @@ public class Nutzer {
     }
 
 
-    public JSONObject tokenmoken(String benutzernameText, String passwordText) throws Exception {
+    public JSONObject tokenAktualisieren(String benutzernameText, String passwordText) throws Exception {
 
         JSONObject json = new JSONObject();
-        String token = FirebaseInstanceId.getInstance().getToken();
+        String currentInstanceToken = FirebaseInstanceId.getInstance().getToken();
 
-        System.out.println("TOKEN: " + token);
+        System.out.println("TOKEN: " + currentInstanceToken);
 
         try {
             json.put("Username", benutzernameText);
             json.put("Password", passwordText);
-            json.put("PushToken", token);
+            json.put("PushToken", currentInstanceToken);
         } catch (JSONException e) {
             e.printStackTrace();
         }

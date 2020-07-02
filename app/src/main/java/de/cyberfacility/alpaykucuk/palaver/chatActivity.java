@@ -33,9 +33,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.util.ArrayList;
-
-import javax.crypto.spec.OAEPParameterSpec;
-
 import cn.pedant.SweetAlert.SweetAlertDialog;
 
 public class chatActivity extends AppCompatActivity{
@@ -109,18 +106,11 @@ public class chatActivity extends AppCompatActivity{
         message_rv.setLayoutManager(layoutManager);
         message_rv.setAdapter(messageAdapter);
 
-
-        /*if (isNetworkAvailable()) {
-            TokenAktualisieren();
-        } else {
-
-        }*/
-
         gpsbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
 
-                if (!isNetworkAvailable()) {
+                if (!istMitInternetVerbunden()) {
                     new SweetAlertDialog(chatActivity.this, SweetAlertDialog.ERROR_TYPE)
                             .setTitleText("Oops...")
                             .setContentText("Etwas ist schiefgelaufen!")
@@ -142,7 +132,7 @@ public class chatActivity extends AppCompatActivity{
 
                 InputMethodManager imm = (InputMethodManager)getSystemService(Context.INPUT_METHOD_SERVICE);
                 imm.hideSoftInputFromWindow(chatsendentxt.getWindowToken(), 0);
-                if(chatsendentxt.getText().toString().equals("") || !isNetworkAvailable()) {
+                if(chatsendentxt.getText().toString().equals("") || !istMitInternetVerbunden()) {
                     new SweetAlertDialog(chatActivity.this, SweetAlertDialog.ERROR_TYPE)
                             .setTitleText("Oops...")
                             .setContentText("Etwas ist schiefgelaufen!")
@@ -159,7 +149,7 @@ public class chatActivity extends AppCompatActivity{
         });
 
 
-        if (isNetworkAvailable()) {
+        if (istMitInternetVerbunden()) {
             pullMessages();
         } else {
 
@@ -222,6 +212,7 @@ public class chatActivity extends AppCompatActivity{
 
     public void nachrichtSenden() {
 
+        //Nachricht senden
         String opCodeMerge = OpCodesMessages.TEXT.ordinal() + chatsendentxt.getText().toString();
         nachrichtSenden nS = new nachrichtSenden("text/plain", opCodeMerge);
         nS.execute((Void)null);
@@ -242,49 +233,46 @@ public class chatActivity extends AppCompatActivity{
     }
 
     public void MessagesAbZeitpunktLaden() {
-        //Lädt die Messages des Nutzers
+        //Lädt die Messages des Nutzers ab dem Datum der letzten offline gespeicherten Nachricht
         nachrichtAnzeigenAbZeitpunkt nz = new nachrichtAnzeigenAbZeitpunkt(currentEmpfänger.getNutzername());
         nz.execute((Void)null);
 
     }
 
-
-    public void TokenAktualisieren() {
-        //Lädt die Messages des Nutzers
-        Tokenmoken tm = new Tokenmoken();
-        tm.execute((Void)null);
-
-    }
-
     public ArrayList<Message> formJSONARRAYtoNormalArray(JSONArray jsonArray) {
+        //Iterriert durch das JSON Array und mappt Keys zu einem Message Objekt
         ArrayList<Message> arrayList = new ArrayList(jsonArray.length());
         for(int i=0;i < jsonArray.length();i++){
             try {
                 JSONObject currentJSONObjekt = jsonArray.getJSONObject(i);
+                //Entscheiden ob es sich um eine GEO Nachricht handelt oder eine text Nachricht
                 if (String.valueOf(currentJSONObjekt.get("Data").toString().charAt(0)).equals(String.valueOf(OpCodesMessages.GEO.ordinal()))) {
-                    GPSMessage newMessage = new GPSMessage(
+                    //Nachricht ist eine GEO Nachricht
+                    GPSMessage newGpsMessage = new GPSMessage(
                             currentJSONObjekt.get("Sender").toString(),
                             currentJSONObjekt.get("Recipient").toString(),
                             currentJSONObjekt.get("Mimetype").toString(),
                             currentJSONObjekt.get("Data").toString().substring(1),
                             currentJSONObjekt.get("DateTime").toString());
-                    newMessage.generateLängenUndBreitenGrad();
-                    arrayList.add(newMessage);
+                    newGpsMessage.generateLängenUndBreitenGrad();
+                    arrayList.add(newGpsMessage);
                 } else {
-                    Message newMessage = new Message(
+                    //Nachricht ist eine Text Nachricht
+                    Message newTextMessage = new Message(
                             currentJSONObjekt.get("Sender").toString(),
                             currentJSONObjekt.get("Recipient").toString(),
                             currentJSONObjekt.get("Mimetype").toString(),
                             currentJSONObjekt.get("Data").toString().substring(1),
                             currentJSONObjekt.get("DateTime").toString());
-                    arrayList.add(newMessage);
+                    arrayList.add(newTextMessage);
                 }
 
-                //TODO: FALLS PIC NEUES ELSE-IF
+                //TODO: FALLS PIC NACHRICHT NEUES ELSE-IF
             } catch (JSONException e) {
                 e.printStackTrace();
             }
         }
+        //Gebe neues Array mit Message Objekten aus!
         return arrayList;
     }
 
@@ -294,8 +282,6 @@ public class chatActivity extends AppCompatActivity{
         String nachrichtText;
         String mimetype;
         JSONObject response = new JSONObject();
-
-
 
         public nachrichtSenden(String newmimetype, String nachrichtEditText1){
             nachrichtText=nachrichtEditText1;
@@ -317,7 +303,7 @@ public class chatActivity extends AppCompatActivity{
 
             try{
 
-                response = MainScreenActivity.currentNutzer.nachrichtSenden(currentEmpfänger.getNutzername(), mimetype, nachrichtText);
+                response = MainScreenActivity.currentNutzer.nachrichtVersenden(currentEmpfänger.getNutzername(), mimetype, nachrichtText);
 
             }
 
@@ -378,6 +364,7 @@ public class chatActivity extends AppCompatActivity{
 
             try{
 
+                //Wenn offline Nachrichten leer, dann pulle alle Nachrichten .. ansonsten nur die ab einem bestimmten Zeitpunkt
                 if(messages.size() == 0) {
                     pullMessages();
                 } else {
@@ -419,6 +406,7 @@ public class chatActivity extends AppCompatActivity{
 
                                     messageAdapter.updateList(messages);
                                     message_rv.scrollToPosition(messages.size() - 1);
+                                    //Chat mit Empfänger offline speichern!
                                     MainScreenActivity.currentNutzer.searchFreundInListe(currentEmpfänger.getNutzername()).setMessages(messages);
                                     PowerPreference.getFileByName("Offline").putObject("OfflineNutzer", MainScreenActivity.currentNutzer);
                                 }
@@ -432,7 +420,6 @@ public class chatActivity extends AppCompatActivity{
 
                 }
 
-
             } catch (Exception e) {
                 e.printStackTrace();
             }
@@ -442,8 +429,6 @@ public class chatActivity extends AppCompatActivity{
     public class nachrichtAnzeigen extends AsyncTask<Void,Void,Boolean> {
         String freund;
         JSONObject response = new JSONObject();
-
-
 
         public nachrichtAnzeigen(String friend){
             freund=friend;
@@ -466,7 +451,7 @@ public class chatActivity extends AppCompatActivity{
 
             try{
 
-                response = MainScreenActivity.currentNutzer.getChat(currentEmpfänger.getNutzername());
+                response = MainScreenActivity.currentNutzer.getChatMitEmpfaenger(currentEmpfänger.getNutzername());
 
             }
 
@@ -518,88 +503,31 @@ public class chatActivity extends AppCompatActivity{
 
 
 
-    private boolean isNetworkAvailable() {
+    private boolean istMitInternetVerbunden() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        NetworkInfo netzwerkInfo = connectivityManager.getActiveNetworkInfo();
+        return netzwerkInfo != null && netzwerkInfo.isConnected();
     }
 
 
     public void gpsNachrichtSenden() {
-        GPS gps = new GPS(getApplicationContext());
-        Location l = gps.getLocation();
-        if (l == null) {
-            Toast.makeText(getApplicationContext(), "GPS Fehler", Toast.LENGTH_SHORT).show();
+        Gps currentGps = new Gps(getApplicationContext());
+        Location currentDeviceLocation = currentGps.getCurrentDeviceLocation();
+        if (currentDeviceLocation == null) {
+            Toast.makeText(getApplicationContext(), "Gps Fehler", Toast.LENGTH_SHORT).show();
         } else {
-            double lat = l.getLatitude();
-            double lon = l.getLongitude();
-            Uri intentUri = Uri.parse("geo:" + lat + "," + lon);
+            double breitenGrad = currentDeviceLocation.getLatitude();
+            double laengenGrad = currentDeviceLocation.getLongitude();
+
+            Uri intentUri = Uri.parse("geo:" + breitenGrad + "," + laengenGrad);
             Intent mapIntent = new Intent(Intent.ACTION_VIEW, intentUri);
             mapIntent.setPackage("com.google.android.apps.maps");
 
-            String opCodeMerge = OpCodesMessages.GEO.ordinal() + intentUri.toString();
-            nachrichtSenden nS = new nachrichtSenden("text/plain", opCodeMerge);
-            nS.execute((Void) null);
+            String opcodeForGPSMessage = OpCodesMessages.GEO.ordinal() + intentUri.toString();
+            nachrichtSenden nachrichtSendenInstance = new nachrichtSenden("text/plain", opcodeForGPSMessage);
+            nachrichtSendenInstance.execute((Void) null);
             refreshList();
-
         }
     }
-
-
-    public class Tokenmoken extends AsyncTask<Void, Void, Boolean> {
-
-        JSONObject response;
-
-
-        public Tokenmoken(){
-        }
-
-
-
-
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            return null;
-        }
-
-
-        @Override
-        protected void onPostExecute(Boolean aBoolean) {
-
-
-            StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
-
-            StrictMode.setThreadPolicy(policy);
-
-
-            try {
-
-                response = MainScreenActivity.currentNutzer.tokenmoken(MainScreenActivity.currentNutzer.getNutzername(), MainScreenActivity.currentNutzer.getPasswort());
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-
-            int msgType = 0;
-
-            try {
-                msgType = response.getInt("MsgType");
-
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-
-            if (msgType == 1) {
-
-            }
-            else{
-                Toast.makeText(chatActivity.this, "Fehler",Toast.LENGTH_SHORT).show();
-            }
-
-        }
-    }
-
 
 }

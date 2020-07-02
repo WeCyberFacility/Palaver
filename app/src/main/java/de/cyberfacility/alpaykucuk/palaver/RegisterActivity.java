@@ -57,8 +57,12 @@ SweetAlertDialog dialog;
     public void register(){
         progressBar.setVisibility(View.VISIBLE);
         if(register_username.getText().toString().equals("")|| register_password.getText().toString().equals("")||
-                register_password_wdh.getText().toString().equals("") || !isNetworkAvailable()){
-                    FehlerAnzeigen("Mach Internet an du depp!");
+                register_password_wdh.getText().toString().equals("")) {
+                    if(!istMitInternetVerbunden()) {
+                        FehlerAnzeigen("Mach Internet an du depp!");
+                    } else {
+                        FehlerAnzeigen("Bitte fülle alle Felder korrekt aus!");
+                    }
                     progressBar.setVisibility(View.INVISIBLE);
         }else {
             passwordequal();
@@ -131,6 +135,13 @@ SweetAlertDialog dialog;
 
                 ErfolgAnzeigen("Registrierung erfolgreich!");
                 break;
+
+            case "Benutzer existiert bereits":
+                FehlerAnzeigen(response);
+                register_username.setText("");
+                register_password.setText("");
+                register_password_wdh.setText("");
+                break;
             default:
                 FehlerAnzeigen(response);
                 register_username.setText("");
@@ -150,10 +161,10 @@ SweetAlertDialog dialog;
                 .show();
     }
 
-    private boolean isNetworkAvailable() {
+    private boolean istMitInternetVerbunden() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        NetworkInfo netzwerkInfo = connectivityManager.getActiveNetworkInfo();
+        return netzwerkInfo != null && netzwerkInfo.isConnected();
     }
 
     public void ErfolgAnzeigen(String message) {

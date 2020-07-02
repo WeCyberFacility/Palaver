@@ -11,7 +11,6 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.StrictMode;
 import android.view.View;
 import android.widget.ImageView;
@@ -60,18 +59,17 @@ public class MainScreenActivity extends AppCompatActivity {
         nutzer_rv.setLayoutManager(new LinearLayoutManager(this));
 
 
-        if(isNetworkAvailable()) {
+        if(istMitInternetVerbunden()) {
             ChatsEmpfangen nz = new ChatsEmpfangen();
             nz.execute((Void)null);
         } else {
 
             nutzerliste = currentNutzer.getFreunde();
             nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, MainScreenActivity.this));
-            //speichereFreundeOffline();
 
         }
 
-        if (isNetworkAvailable() && firstStart) {
+        if (istMitInternetVerbunden() && firstStart) {
             TokenAktualisieren();
             firstStart = false;
         } else {
@@ -101,16 +99,16 @@ public class MainScreenActivity extends AppCompatActivity {
     }
 
 
-    private boolean isNetworkAvailable() {
+    private boolean istMitInternetVerbunden() {
         ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
-        return activeNetworkInfo != null && activeNetworkInfo.isConnected();
+        NetworkInfo netzwerkInfo = connectivityManager.getActiveNetworkInfo();
+        return netzwerkInfo != null && netzwerkInfo.isConnected();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        if(isNetworkAvailable()) {
+        if(istMitInternetVerbunden()) {
             ChatsEmpfangen nz = new ChatsEmpfangen();
             nz.execute((Void)null);
         } else {
@@ -124,69 +122,8 @@ public class MainScreenActivity extends AppCompatActivity {
 
     public void TokenAktualisieren() {
         //Lädt die Messages des Nutzers
-        Tokenmoken tm = new Tokenmoken();
-        tm.execute((Void)null);
-
-    }
-
-
-    public void speichereFreundeOffline() {
-
-        for (Nutzer currNu : currentNutzer.getFreunde()) {
-
-
-            currNu.saveNutzerOffline(sharedPreferences);
-        }
-    }
-
-
-
-    public void KontaktListeLaden() {
-        //Lädt die Kontaktliste des Nutzers
-
-        progressBar.setVisibility(View.VISIBLE);
-
-            Thread thread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try  {
-                        response = currentNutzer.getListeDerFreunde();
-
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-            });
-
-            thread.start();
-
-
-            final Handler handler = new Handler();
-            handler.postDelayed(new Runnable() {
-                @Override
-                public void run() {
-                    while (response == null) {}
-                    JSONArray list = new JSONArray();
-                    try {
-                        list = (JSONArray)response.get("Data");
-                    } catch (JSONException e) {
-                        e.printStackTrace();
-                    }
-
-                    nutzerliste = formJSONARRAYtoNormalArray(list);
-                    //printNutzerlist();
-
-                    nutzer_rv.setAdapter(new ChatAdapter(nutzerliste, MainScreenActivity.this));
-                    progressBar.setVisibility(View.INVISIBLE);
-
-                    currentNutzer.addFreundeInOffline(nutzerliste);
-                    PowerPreference.getFileByName("Offline").putObject("OfflineNutzer", currentNutzer);
-                    currentNutzer = PowerPreference.getFileByName("Offline").getObject("OfflineNutzer", Nutzer.class);
-
-
-                }
-            }, 2000);
+        TokenAktualisieren newTokenAktualisierenTask = new TokenAktualisieren();
+        newTokenAktualisierenTask.execute((Void)null);
 
     }
 
@@ -214,7 +151,6 @@ public class MainScreenActivity extends AppCompatActivity {
 
     public class ChatsEmpfangen extends AsyncTask<Void,Void,Boolean> {
 
-        String nachrichtText;
         JSONObject response = new JSONObject();
 
 
@@ -295,17 +231,13 @@ public class MainScreenActivity extends AppCompatActivity {
         }
     }
 
-    public class Tokenmoken extends AsyncTask<Void, Void, Boolean> {
+    public class TokenAktualisieren extends AsyncTask<Void, Void, Boolean> {
 
         JSONObject response;
 
 
-        public Tokenmoken(){
+        public TokenAktualisieren(){
         }
-
-
-
-
 
         @Override
         protected Boolean doInBackground(Void... voids) {
@@ -324,7 +256,7 @@ public class MainScreenActivity extends AppCompatActivity {
 
             try {
 
-                response = MainScreenActivity.currentNutzer.tokenmoken(MainScreenActivity.currentNutzer.getNutzername(), MainScreenActivity.currentNutzer.getPasswort());
+                response = MainScreenActivity.currentNutzer.tokenAktualisieren(MainScreenActivity.currentNutzer.getNutzername(), MainScreenActivity.currentNutzer.getPasswort());
 
             } catch (Exception e) {
                 e.printStackTrace();
@@ -344,7 +276,7 @@ public class MainScreenActivity extends AppCompatActivity {
 
             }
             else{
-                Toast.makeText(MainScreenActivity.this, "Fehler",Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainScreenActivity.this, "Es ist ein Fehler aufgetreten",Toast.LENGTH_SHORT).show();
             }
 
         }

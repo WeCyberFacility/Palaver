@@ -40,6 +40,7 @@ public class MainActivity extends AppCompatActivity {
             getLoggedNutzer();
             Intent myIntent = new Intent(MainActivity.this, MainScreenActivity.class);
             this.startActivity(myIntent);
+
             finish();
         }
     }

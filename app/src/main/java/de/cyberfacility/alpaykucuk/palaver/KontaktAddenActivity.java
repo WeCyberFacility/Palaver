@@ -90,10 +90,7 @@ public class KontaktAddenActivity extends AppCompatActivity {
                     } catch (JSONException e) {
                         e.printStackTrace();
                     }
-                    checkResponseFromLogin(responseString);
-
-                    MainScreenActivity.currentNutzer.addFreund(neuerNutzer);
-                    MainScreenActivity.currentNutzer.saveNutzerOffline(sharedPreferences);
+                    checkResponseFromLogin(responseString, neuerNutzer);
 
                     progressBar.setVisibility(View.INVISIBLE);
                 }
@@ -118,13 +115,14 @@ public class KontaktAddenActivity extends AppCompatActivity {
         thread.start();
     }
 
-    public void checkResponseFromLogin(String response) {
+    public void checkResponseFromLogin(String response, Nutzer newFriend) {
 
         switch (response) {
             case "Freund hinzugefügt":
                 ErfolgAnzeigen(response);
                 newcontacttxt.setText("");
-
+                MainScreenActivity.currentNutzer.addFreund(newFriend);
+                MainScreenActivity.currentNutzer.saveNutzerOffline(sharedPreferences);
                 break;
             default:
                 FehlerAnzeigen(response);
@@ -132,9 +130,7 @@ public class KontaktAddenActivity extends AppCompatActivity {
                 break;
         }
 
-
     }
-
 
     public void FehlerAnzeigen(String message) {
         new SweetAlertDialog(this, SweetAlertDialog.ERROR_TYPE)

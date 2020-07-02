@@ -49,6 +49,8 @@ public class chatActivity extends AppCompatActivity{
 
     SharedPreferences sharedPreferences;
 
+    static boolean vonBenachtigung;
+
 
 
     public static ArrayList<Message> messages = new ArrayList<>();
@@ -159,10 +161,6 @@ public class chatActivity extends AppCompatActivity{
                 message_rv.scrollToPosition(messages.size() - 1);
         }
 
-
-
-
-
     }
 
 
@@ -172,11 +170,8 @@ public class chatActivity extends AppCompatActivity{
 
             @Override
             public void run() {
-
                 Log.i("Refresh","Refreshing List");
                 MessagesAbZeitpunktLaden();
-
-
             }
         }).start();
     }
@@ -204,7 +199,6 @@ public class chatActivity extends AppCompatActivity{
     @Override
     public void onBackPressed() {
         super.onBackPressed();
-
 
     }
 

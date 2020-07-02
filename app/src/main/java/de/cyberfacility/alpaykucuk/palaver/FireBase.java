@@ -12,6 +12,7 @@ import androidx.core.app.NotificationCompat;
 
 import com.google.firebase.messaging.FirebaseMessagingService;
 import com.google.firebase.messaging.RemoteMessage;
+import com.preference.PowerPreference;
 
 public class FireBase extends FirebaseMessagingService {
 
@@ -82,6 +83,7 @@ public class FireBase extends FirebaseMessagingService {
 
     public Nutzer findEmpfängerInList(String sender) {
 
+        getLoggedNutzer();
         Nutzer senderNutzer = MainScreenActivity.currentNutzer.searchFreundInListe(sender);
 
         return senderNutzer;
@@ -89,6 +91,13 @@ public class FireBase extends FirebaseMessagingService {
     }
 
 
+
+    public void getLoggedNutzer() {
+        Nutzer offlineNutzer = PowerPreference.getFileByName("Offline").getObject("OfflineNutzer", Nutzer.class);
+        MainScreenActivity.currentNutzer = offlineNutzer;
+        System.out.println("Beweis: " + offlineNutzer.getNutzername());
+
+    }
 
 
 
